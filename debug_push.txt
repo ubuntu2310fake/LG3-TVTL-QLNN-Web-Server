@@ -1,0 +1,70 @@
+[2026-02-05 12:37:40] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ...","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:37:40] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:37:41] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ,,,","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:37:41] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:38:08] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ,,,","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:38:08] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:38:09] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: lll","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:38:09] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:38:11] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ;;;","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:38:11] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:39:31] ❌ Lỗi Auth: Key không khớp. Nhận được: 
+[2026-02-05 12:40:27] ❌ Lỗi Auth: Key không khớp. Nhận được: 
+[2026-02-05 12:40:38] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"TEST SYSTEM","content":"Đây là tin nhắn test API lúc 12h","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:40:38] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:40:54] ✅ Nhận yêu cầu: Loại=PSYCHOLOGY | Nội dung={"type":"PSYCHOLOGY","student_code":"HS001","student_name":"Nguyễn Văn Test","risk_level":"DANGER","message":"Tôi cảm thấy muốn kết thúc tất cả (Test API)"}
+[2026-02-05 12:40:54] 💥 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'type' in 'field list'
+[2026-02-05 12:41:45] ✅ Nhận yêu cầu: Loại=PSYCHOLOGY | Nội dung={"type":"PSYCHOLOGY","student_code":"HS001","student_name":"Nguyễn Văn Test","risk_level":"DANGER","message":"Tôi cảm thấy muốn kết thúc tất cả (Test API)"}
+[2026-02-05 12:41:45] -> Đã Insert vào Queue thành công. Job ID: 23
+[2026-02-05 12:42:04] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ...","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-05 12:42:04] -> Đã Insert vào Queue thành công. Job ID: 24
+[2026-02-05 12:43:16] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"..","receiver_id":8,"url":"\/my_violations"}
+[2026-02-05 12:43:16] -> Đã Insert vào Queue thành công. Job ID: 25
+[2026-02-07 11:43:48] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ...","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-07 11:43:48] -> Đã Insert vào Queue thành công. Job ID: 34
+[2026-02-07 14:41:01] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Báo cáo sự cố: ..","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-07 14:41:01] -> Đã Insert vào Queue thành công. Job ID: 35
+[2026-02-07 21:00:45] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Tin nhắn: ...","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-07 21:00:45] -> Đã Insert vào Queue thành công. Job ID: 36
+[2026-02-07 21:07:36] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"...","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-07 21:07:36] -> Đã Insert vào Queue thành công. Job ID: 37
+[2026-02-07 21:09:01] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:09:01] -> Đã Insert vào Queue thành công. Job ID: 38
+[2026-02-07 21:12:30] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:12:30] -> Đã Insert vào Queue thành công. Job ID: 39
+[2026-02-07 21:12:42] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:12:42] -> Đã Insert vào Queue thành công. Job ID: 40
+[2026-02-07 21:13:08] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"HS Trương Thanh Hiếu","content":"Tin nhắn: ...","receiver_id":1,"url":"\/teacher_dashboard"}
+[2026-02-07 21:13:08] -> Đã Insert vào Queue thành công. Job ID: 41
+[2026-02-07 21:14:52] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:14:52] -> Đã Insert vào Queue thành công. Job ID: 42
+[2026-02-07 21:14:58] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:14:58] -> Đã Insert vào Queue thành công. Job ID: 43
+[2026-02-07 21:15:26] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:15:26] -> Đã Insert vào Queue thành công. Job ID: 44
+[2026-02-07 21:15:32] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":",,,,","receiver_id":8,"url":"\/?view=chat"}
+[2026-02-07 21:15:32] -> Đã Insert vào Queue thành công. Job ID: 45
+[2026-02-07 21:21:56] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"...","receiver_id":8,"receiver_username":"K48A1016","url":"\/?view=chat"}
+[2026-02-07 21:21:56] -> Đã Insert vào Queue thành công. Job ID: 46
+[2026-02-07 21:49:12] ✅ Nhận yêu cầu: Loại=FRIEND_REQUEST | Nội dung={"type":"FRIEND_REQUEST","sender_name":"Trương Thanh Hiếu","receiver_id":47,"receiver_username":"K48A8036","url":"\/?view=chat"}
+[2026-02-07 21:49:12] -> Đã Insert vào Queue thành công. Job ID: 47
+[2026-02-07 22:01:33] ✅ Nhận yêu cầu: Loại=FRIEND_REQUEST | Nội dung={"type":"FRIEND_REQUEST","sender_name":"Trương Thanh Hiếu","receiver_id":11,"receiver_username":"K48A1002","url":"\/?view=chat"}
+[2026-02-07 22:01:33] -> Đã Insert vào Queue thành công. Job ID: 48
+[2026-02-07 22:09:03] ✅ Nhận yêu cầu: Loại=FRIEND_REQUEST | Nội dung={"type":"FRIEND_REQUEST","sender_name":"Trương Thanh Hiếu","receiver_id":12,"receiver_username":"K48A2040","url":"\/?view=chat"}
+[2026-02-07 22:09:03] -> Đã Insert vào Queue thành công. Job ID: 49
+[2026-02-08 20:05:25] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Trương Thanh Hiếu","content":"[IMG]:\/static\/uploads\/chat\/6e8d9f4df4ec4e678bb97fa55dc9c4b9.png","receiver_id":77,"receiver_username":"truonghieu","url":"\/teacher_dashboard"}
+[2026-02-08 20:05:25] -> Đã Insert vào Queue thành công. Job ID: 50
+[2026-02-08 20:06:24] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Trương Thanh Hiếu","content":"[IMG]:https:\/\/cdn.tgdd.vn\/2021\/03\/GameApp\/logoapp-200x200.png","receiver_id":77,"receiver_username":"truonghieu","url":"\/teacher_dashboard"}
+[2026-02-08 20:06:24] -> Đã Insert vào Queue thành công. Job ID: 51
+[2026-02-08 20:07:59] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Trương Thanh Hiếu","content":",..","receiver_id":77,"receiver_username":"truonghieu","url":"\/teacher_dashboard"}
+[2026-02-08 20:07:59] -> Đã Insert vào Queue thành công. Job ID: 52
+[2026-02-08 20:10:47] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"LG3 - Trương Hiếu","content":"[IMG]:\/static\/uploads\/chat\/0c5c2625ff0749e28a62f0c5e8f42db8.png","receiver_id":8,"receiver_username":"K48A1016","url":"\/?view=chat"}
+[2026-02-08 20:10:47] -> Đã Insert vào Queue thành công. Job ID: 53
+[2026-02-08 20:15:26] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Trương Thanh Hiếu","content":"[IMG]:https:\/\/res.cloudinary.com\/desue1m0s\/image\/upload\/v1770556523\/school_chat\/pbzw613a7zjkq7o4msah.png","receiver_id":77,"receiver_username":"truonghieu","url":"\/teacher_dashboard"}
+[2026-02-08 20:15:26] -> Đã Insert vào Queue thành công. Job ID: 54
+[2026-02-08 21:13:23] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Trương Thanh Hiếu","content":"[IMG]:\/static\/uploads\/chat\/aa1937508f584852acd7fb6b1f40d0f3.jpg","receiver_id":77,"receiver_username":"truonghieu","url":"\/teacher_dashboard"}
+[2026-02-08 21:13:23] -> Đã Insert vào Queue thành công. Job ID: 55
+[2026-02-08 21:13:42] ✅ Nhận yêu cầu: Loại=CHAT | Nội dung={"type":"CHAT","sender_name":"Admin","content":"[IMG]:\/static\/uploads\/chat\/04e575d76c864642af63730ac9cb41a4.jpg","receiver_id":8,"receiver_username":"K48A1016","url":"\/?view=chat"}
+[2026-02-08 21:13:42] -> Đã Insert vào Queue thành công. Job ID: 56
+[2026-02-12 10:12:43] ✅ Nhận yêu cầu: Loại=PSYCHOLOGY | Nội dung={"type":"PSYCHOLOGY","student_code":"admin","student_name":"Admin","risk_level":"WARNING","message":"tôi bị áp lực học tập"}
+[2026-02-12 10:12:43] -> Đã Insert vào Queue thành công. Job ID: 117
