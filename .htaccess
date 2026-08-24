@@ -1,0 +1,26 @@
+Options +FollowSymLinks -MultiViews
+# Bật chế độ viết lại URL
+RewriteEngine On
+
+# 1. Nếu yêu cầu là thư mục hoặc file có thật thì không làm gì cả
+RewriteCond %{REQUEST_FILENAME} -d [OR]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# 1.5. Điều hướng URL ngắn dạng /[Mã_Học_Sinh] (không phân biệt hoa thường) về profile_public.php
+RewriteRule ^(K[0-9]{2}A[0-9]{1,2}[0-9]{2,3})$ profile_public.php?code=$1 [NC,L,QSA]
+
+# 2. Tự động thêm đuôi .php vào các file không có đuôi
+# (Ví dụ: gõ /gate_check -> server tự hiểu là /gate_check.php)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L,QSA]
+
+AddType video/mp2t .ts
+AddType application/x-mpegURL .m3u8
+
+# Tắt nén gzip và buffer cho script SSE để dữ liệu đẩy xuống tức thì
+<Files "sse_stream.php">
+    SetEnv no-gzip 1
+    SetEnv dont-vary 1
+</Files>

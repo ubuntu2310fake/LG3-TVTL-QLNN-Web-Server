@@ -1,0 +1,12 @@
+/vendor/
+/logs/*
+!/logs/.gitkeep
+/dash/*
+!/dash/.gitkeep
+*.log
+.Trash-*
+.DS_Store
+debug_push.txt
+*.py
+*.pyc
+__pycache__/

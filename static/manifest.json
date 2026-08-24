@@ -1,0 +1,21 @@
+{
+  "name": "Siêu ứng dụng (NỘI BỘ NHÓM)",
+  "short_name": "LG3_NOIBO",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#005fba",
+  "gcm_sender_id": "103953800507",
+  "icons": [
+    {
+      "src": "/lg3192192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/lg3512512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
