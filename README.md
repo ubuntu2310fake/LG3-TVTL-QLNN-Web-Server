@@ -1,6 +1,6 @@
 # 🏫 LG3 - Web Server (Tư Vấn Tâm Lý & Quản Lý Thi Đua Nền Nếp)
 
-Hệ thống Web Server & API quản lý thi đua nền nếp, tư vấn tâm lý học đường, sổ đầu bài điện tử và chấm điểm trực tuyến dành cho các trường THPT.
+Hệ thống Web Server & API quản lý thi đua nền nếp, tư vấn tâm lý học đường và chấm điểm trực tuyến dành cho các trường THPT.
 
 ## 🚀 Tính năng chính
 
