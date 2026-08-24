@@ -1,3 +1,3 @@
-# LG3-TVTL-QLNN-Web-Serveẻ
+# LG3-TVTL-QLNN-Web-Server
 
 Phần mềm quản lý thi đua mã nguồn mở
