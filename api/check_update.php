@@ -75,12 +75,20 @@ $updates = [
             'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
         ]
+    ],
+    '2.0.2' => [
+        'tag' => '2.0.2', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_2', "Cải thiện toàn bộ app\nCải thiện hiệu suất thông báo cho GV và HS"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+        ]
     ]
     // Sếp có thể thêm bản 1.0.2 vào đây sau này
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.1';
+$latest_version = '2.0.2';
 
 if ($current_version === $latest_version) {
     echo json_encode(['update_available' => false]);

@@ -484,12 +484,19 @@ $stmt = $pdo->prepare("
         WHERE user_id = ?
         GROUP BY device_name
     ) latest ON s.id = latest.max_id
-    LEFT JOIN push_subscription p ON s.session_id = p.session_id
+    LEFT JOIN push_subscription p ON (s.session_id = p.session_id OR (p.user_id = s.user_id AND p.device_model = s.device_name AND p.platform = 'app'))
     ORDER BY s.last_active DESC
     LIMIT 20
 ");
 $stmt->execute([$userId]);
 $devices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($devices as &$d) {
+    if (isset($d['platform']) && $d['platform'] === 'app' && !empty($d['device_model'])) {
+        $d['device_name'] = $d['device_model'];
+    }
+}
+unset($d);
 
 // Truy vấn lại DB để lấy chính xác cột avatar, two_factor_enabled, email, email_verified, is_default_password mới nhất
 $stmtU = $pdo->prepare("SELECT avatar, two_factor_enabled, email, email_verified, is_default_password FROM users WHERE id = ?");

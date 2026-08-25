@@ -161,9 +161,16 @@ if (!empty($ticker_school) || !empty($sys_bc_msg)) {
         </div>
     </div>';
 }
+$query_theme = $_GET['theme'] ?? $_COOKIE['theme'] ?? '';
+$data_theme_attr = '';
+if ($query_theme === 'dark') {
+    $data_theme_attr = 'data-theme="dark"';
+} elseif ($query_theme === 'light') {
+    $data_theme_attr = '';
+}
 ?>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" <?= $data_theme_attr ?>>
 <head>
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') ?>/">
@@ -540,6 +547,17 @@ if (!empty($ticker_school) || !empty($sys_bc_msg)) {
     <script>
         (function() {
             try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const qTheme = urlParams.get('theme');
+                if (qTheme) {
+                    localStorage.setItem('theme_mode', qTheme);
+                    if (qTheme === 'dark') {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                    } else if (qTheme === 'light') {
+                        document.documentElement.removeAttribute('data-theme');
+                    }
+                    return;
+                }
                 const savedMode = localStorage.getItem('theme_mode') || 'system';
                 let themeToApply = 'light';
                 if (savedMode === 'dark') { themeToApply = 'dark'; } 

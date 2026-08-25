@@ -47,6 +47,12 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$userId, $endpoint, $p256dh, $auth, $device, $platform, $currentSession]);
 
+    // 4. Đồng bộ tên thiết bị sang bảng user_sessions cho session hiện hành
+    if ($platform === 'app' && !empty($device) && $device !== 'Unknown Device') {
+        $pdo->prepare("UPDATE user_sessions SET device_name = ? WHERE session_id = ?")
+            ->execute([$device, $currentSession]);
+    }
+
     echo json_encode([
         'status' => 'success', 
         'msg' => __('subscription_updated', 'Đã cập nhật đăng ký thông báo!')

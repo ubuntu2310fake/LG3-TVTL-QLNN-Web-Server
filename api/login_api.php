@@ -92,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // XỬ LÝ KHI ĐĂNG NHẬP THÀNH CÔNG
     if ($login_success) {
+        $old_session_id = trim($_POST['old_session_id'] ?? $_COOKIE['PHPSESSID'] ?? '');
         $_SESSION['user'] = $user;
         $sessId = session_id();
         
@@ -108,22 +109,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ua_raw = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
 
         // Lấy tên thiết bị chi tiết từ POST (App gửi lên) hoặc Detect từ User-Agent
-        $dev = $_POST['device_name'] ?? 'Thiết bị lạ';
-        if ($dev === 'Thiết bị lạ') {
-            if (strpos($ua_raw, 'Flutter') !== false)         $dev = 'App Di Động';
-            elseif (strpos($ua_raw, 'iPhone') !== false)      $dev = 'iPhone';
-            elseif (strpos($ua_raw, 'iPad') !== false)        $dev = 'iPad';
-            elseif (strpos($ua_raw, 'Android') !== false)     $dev = 'Android';
-            elseif (strpos($ua_raw, 'Windows') !== false)     $dev = 'Windows PC';
-            elseif (strpos($ua_raw, 'Macintosh') !== false)   $dev = 'MacBook';
-            elseif (strpos($ua_raw, 'Linux') !== false)       $dev = 'Linux PC';
-            elseif (strpos($ua_raw, 'CriOS') !== false)       $dev = 'Chrome iOS';
+        $dev = trim($_POST['device_name'] ?? '');
+        if (empty($dev) || $dev === 'Thiết bị lạ' || $dev === 'Unknown Device') {
+            if (strpos($ua_raw, 'Dart') !== false || strpos($ua_raw, 'Flutter') !== false) {
+                $dev = 'App Di Động';
+            } elseif (strpos($ua_raw, 'iPhone') !== false) {
+                $dev = 'iPhone';
+            } elseif (strpos($ua_raw, 'iPad') !== false) {
+                $dev = 'iPad';
+            } elseif (strpos($ua_raw, 'Android') !== false) {
+                $dev = 'Android';
+            } elseif (strpos($ua_raw, 'Windows') !== false) {
+                $dev = 'Windows PC';
+            } elseif (strpos($ua_raw, 'Macintosh') !== false) {
+                $dev = 'MacBook';
+            } elseif (strpos($ua_raw, 'Linux') !== false) {
+                $dev = 'Linux PC';
+            } elseif (strpos($ua_raw, 'CriOS') !== false) {
+                $dev = 'Chrome iOS';
+            } else {
+                $dev = 'App Di Động';
+            }
         }
 
-        // Xóa session cũ cùng loại thiết bị của user này (tránh lặp)
+        // Xóa session cũ cùng loại thiết bị hoặc session rác của user này
         $pdo->prepare("
             DELETE FROM user_sessions
-            WHERE user_id = ? AND device_name = ? AND session_id != ?
+            WHERE user_id = ? AND (device_name = ? OR device_name = 'Thiết bị lạ') AND session_id != ?
         ")->execute([$user['id'], $dev, $sessId]);
 
         // UPSERT session: cập nhật nếu đã có session_id này, insert mới nếu chưa có
@@ -132,18 +144,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, NOW())
             ON DUPLICATE KEY UPDATE
                 ip_address = VALUES(ip_address),
+                device_name = VALUES(device_name),
                 last_active = NOW(),
                 token_selector = VALUES(token_selector)
         ")->execute([$user['id'], $sessId, $ip, $ua_raw, $dev, $selector]);
 
-        // Đồng bộ push_subscription nếu đổi session_id
+        // Đồng bộ push_subscription nếu đổi session_id hoặc theo thiết bị App
         if (!empty($old_session_id) && $old_session_id !== $sessId) {
-            $pdo->prepare("UPDATE push_subscription SET session_id = ? WHERE session_id = ?")
-                ->execute([$sessId, $old_session_id]);
+            $pdo->prepare("UPDATE push_subscription SET session_id = ? WHERE session_id = ? OR (user_id = ? AND device_model = ?)")
+                ->execute([$sessId, $old_session_id, $user['id'], $dev]);
+        } else {
+            $pdo->prepare("UPDATE push_subscription SET session_id = ? WHERE user_id = ? AND device_model = ? AND platform = 'app'")
+                ->execute([$sessId, $user['id'], $dev]);
         }
 
         // Trả cookie PHPSESSID về cho an toàn thêm
         setcookie('PHPSESSID', $sessId, 0, "/", "", false, true);
+        setcookie('device_model', $dev, time() + (86400 * 365), "/", "", false, false);
 
         echo json_encode([
             'status' => 'success',

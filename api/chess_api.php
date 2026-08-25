@@ -38,14 +38,29 @@ try {
             $stmt->execute([$currentUserId, $targetId]);
             $matchId = $pdo->lastInsertId();
 
+            $challengerName = $currentUser['full_name'] ?? $currentUsername;
+
             // Push event to target
             $payload = [
                 'match_id' => $matchId,
                 'challenger_id' => $currentUserId,
-                'challenger_name' => $currentUser['full_name'] ?? $currentUsername,
+                'challenger_name' => $challengerName,
                 'challenger_username' => $currentUsername
             ];
             sse_push($pdo, 'CHESS_CHALLENGE', $payload, 'user:' . $targetUsername);
+
+            // Gửi Push Notification (FCM App / Web Push) cho đối thủ
+            require_once __DIR__ . '/../includes/push_helper.php';
+            PushHelper::sendToUser(
+                $pdo,
+                $targetId,
+                '♟️ ' . (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thách đấu Cờ Vua' : 'Chess Challenge'),
+                $challengerName . ' ' . (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'muốn thách đấu cờ vua với bạn!' : 'wants to challenge you to a chess match!'),
+                '/chess.php?match_id=' . $matchId,
+                'CHESS_CHALLENGE',
+                (string)$matchId,
+                'open_chess'
+            );
 
             echo json_encode(['status' => 'success', 'match_id' => $matchId]);
             break;

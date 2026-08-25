@@ -152,8 +152,131 @@ while (true) {
                 }
             }
 
+            // CASE 4: CHẤM SỔ ĐẦU BÀI / THI ĐUA LỚP (CLASS_CHECK)
             // =========================================================
-            // CASE 4: VI PHẠM NỀN NẾP (VIOLATION — 4 NHÓM ĐỐI TƯỢNG)
+            elseif ($type === 'CLASS_CHECK') {
+                echo "-> Xử lý Thi đua lớp... ";
+                $className = $data['class_name'] ?? 'Lớp';
+                $week = $data['week'] ?? '';
+                $pushTitle = "📋 Báo cáo lớp | Class Report: $className";
+                $body = "🇻🇳 Đã cập nhật bảng nền nếp tuần $week cho lớp $className.\n🇬🇧 Updated discipline report for week $week.";
+
+                $stmtReceivers = $pdo->prepare("
+                    SELECT u.id FROM users u 
+                    LEFT JOIN student s ON u.username = s.code 
+                    WHERE s.class_id = ? OR u.role IN ('TEACHER', 'ADMIN')
+                ");
+                $stmtReceivers->execute([$data['class_id'] ?? 0]);
+                $receivers = $stmtReceivers->fetchAll(PDO::FETCH_COLUMN);
+
+                $pushJobs = [];
+                foreach ($receivers as $uid) {
+                    $pushJobs[] = [
+                        'user_id'     => (int)$uid,
+                        'title'       => $pushTitle,
+                        'body'        => $body,
+                        'url'         => '/teacher_dashboard.php',
+                        'type'        => 'CLASS_CHECK',
+                        'target_id'   => (string)($data['class_id'] ?? ''),
+                        'action'      => 'open_class_check',
+                        'channel_key' => 'violation_channel'
+                    ];
+                }
+                PushHelper::sendBulk($pdo, $pushJobs);
+            }
+
+            // =========================================================
+            // CASE 5: NHẬP ĐIỂM HỌC TẬP (ACADEMIC_SCORE)
+            // =========================================================
+            elseif ($type === 'ACADEMIC_SCORE') {
+                echo "-> Xử lý Điểm học tập... ";
+                $className = $data['class_name'] ?? 'Lớp';
+                $week = $data['week'] ?? '';
+                $pushTitle = "📊 Điểm học tập | Academic Score: Tuần/W $week";
+                $body = "🇻🇳 Đã cập nhật điểm học tập tuần $week cho $className.\n🇬🇧 Academic score for week $week updated for $className.";
+
+                $stmtReceivers = $pdo->prepare("
+                    SELECT u.id FROM users u 
+                    LEFT JOIN student s ON u.username = s.code 
+                    WHERE s.class_id = ? OR u.role IN ('TEACHER', 'ADMIN')
+                ");
+                $stmtReceivers->execute([$data['class_id'] ?? 0]);
+                $receivers = $stmtReceivers->fetchAll(PDO::FETCH_COLUMN);
+
+                $pushJobs = [];
+                foreach ($receivers as $uid) {
+                    $pushJobs[] = [
+                        'user_id'     => (int)$uid,
+                        'title'       => $pushTitle,
+                        'body'        => $body,
+                        'url'         => '/teacher_dashboard.php',
+                        'type'        => 'ACADEMIC_SCORE',
+                        'target_id'   => (string)($data['class_id'] ?? ''),
+                        'action'      => 'open_academic_scores',
+                        'channel_key' => 'academic_channel'
+                    ];
+                }
+                PushHelper::sendBulk($pdo, $pushJobs);
+            }
+
+            // =========================================================
+            // CASE 6: THÔNG BÁO / TIN TỨC NHÀ TRƯỜNG (SCHOOL_NEWS)
+            // =========================================================
+            elseif ($type === 'SCHOOL_NEWS') {
+                echo "-> Xử lý Thông báo nhà trường... ";
+                $newsTitle = $data['title'] ?? 'Thông báo nhà trường | School News';
+                $pushTitle = "📰 " . $newsTitle;
+                $body = (mb_strlen($data['summary'] ?? '') > 90) ? mb_substr($data['summary'], 0, 87) . '...' : ($data['summary'] ?? '');
+
+                $stmtAll = $pdo->query("SELECT id FROM users");
+                $allUsers = $stmtAll->fetchAll(PDO::FETCH_COLUMN);
+
+                $pushJobs = [];
+                foreach ($allUsers as $uid) {
+                    $pushJobs[] = [
+                        'user_id'     => (int)$uid,
+                        'title'       => $pushTitle,
+                        'body'        => $body,
+                        'url'         => '/news.php?id=' . ($data['news_id'] ?? ''),
+                        'type'        => 'SCHOOL_NEWS',
+                        'target_id'   => (string)($data['news_id'] ?? ''),
+                        'action'      => 'open_news',
+                        'channel_key' => 'news_channel'
+                    ];
+                }
+                PushHelper::sendBulk($pdo, $pushJobs);
+            }
+
+            // =========================================================
+            // CASE 7: CÔNG BỐ ĐIỂM THI (EXAM_SCORES)
+            // =========================================================
+            elseif ($type === 'EXAM_SCORES') {
+                echo "-> Xử lý Đánh giá Điểm thi... ";
+                $examTitle = $data['exam_name'] ?? 'Kỳ thi | Exam';
+                $pushTitle = "🎓 Điểm thi | Exam Scores: " . $examTitle;
+                $body = "🇻🇳 Đã có điểm thi mới. Bấm vào đây để tra cứu!\n🇬🇧 New exam scores published. Tap to check!";
+
+                $stmtAll = $pdo->query("SELECT id FROM users WHERE role = 'STUDENT'");
+                $students = $stmtAll->fetchAll(PDO::FETCH_COLUMN);
+
+                $pushJobs = [];
+                foreach ($students as $uid) {
+                    $pushJobs[] = [
+                        'user_id'     => (int)$uid,
+                        'title'       => $pushTitle,
+                        'body'        => $body,
+                        'url'         => '/tracuudiemthi.php',
+                        'type'        => 'EXAM_SCORES',
+                        'target_id'   => (string)($data['exam_id'] ?? ''),
+                        'action'      => 'open_exam_scores',
+                        'channel_key' => 'academic_channel'
+                    ];
+                }
+                PushHelper::sendBulk($pdo, $pushJobs);
+            }
+            // =========================================================
+            // CASE 8: VI PHẠM NỀN NẾP (VIOLATION — 4 NHÓM ĐỐI TƯỢNG)
+            // =========================================================
             // =========================================================
             else { 
                 echo "-> Xử lý Vi phạm nền nếp (4 nhóm đối tượng)... ";

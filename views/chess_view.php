@@ -111,19 +111,19 @@ $currentUserId = $currentUser['id'] ?? 0;
 .player-list-ui { list-style: none; padding: 0; margin: 0; text-align: left; }
 .player-list-item { 
     display: flex; justify-content: space-between; align-items: center; 
-    padding: 12px 15px; border-bottom: 1px solid #e2e8f0;
+    padding: 12px 15px; border-bottom: 1px solid var(--border-color);
 }
 .player-list-item:last-child { border-bottom: none; }
 .pl-info { display: flex; align-items: center; }
 .pl-avatar-wrap { position: relative; margin-right: 15px; }
-.pl-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; }
+.pl-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
 .pl-dot { 
     position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; 
-    border-radius: 50%; border: 2px solid #fff; 
+    border-radius: 50%; border: 2px solid var(--bg-card); 
 }
 .pl-dot.online { background: #10b981; }
 .pl-dot.offline { background: #94a3b8; }
-.pl-name { font-weight: 600; color: #1e293b; font-size: 1rem; }
+.pl-name { font-weight: 600; color: var(--text-main); font-size: 1rem; }
 .btn-challenge {
     background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color);
     padding: 6px 15px; border-radius: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;

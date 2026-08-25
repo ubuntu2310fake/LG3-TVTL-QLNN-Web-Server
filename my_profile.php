@@ -28,7 +28,7 @@ if ($user['role'] == 'STUDENT' || $user['role'] == 'RED_FLAG') {
 $sql = "
     SELECT s.*, p.id as push_id, p.platform as push_platform, p.device_model as push_device_model
     FROM user_sessions s 
-    LEFT JOIN push_subscription p ON s.session_id = p.session_id 
+    LEFT JOIN push_subscription p ON (s.session_id = p.session_id OR (p.user_id = s.user_id AND p.device_model = s.device_name AND p.platform = 'app'))
     WHERE s.user_id = ? 
     ORDER BY s.last_active DESC
 ";
