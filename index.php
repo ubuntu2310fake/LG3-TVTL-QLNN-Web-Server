@@ -25,7 +25,19 @@ $top_week = $current_week;
 $top_3_by_group = [1 => [], 2 => [], 3 => []];
 $school_days = 0;
 
-for ($w = $current_week; $w >= 1; $w--) {
+// Tối ưu hóa: Tìm tuần gần nhất có dữ liệu bằng 1 câu query thay vì vòng lặp query N+1
+$stmt_top_week = $pdo->prepare("
+    SELECT MAX(week_number) FROM (
+        SELECT week_number FROM academic_score WHERE school_year = ? AND week_number <= ?
+        UNION
+        SELECT week_number FROM violation_record WHERE school_year = ? AND week_number <= ? AND is_deleted = 0
+    ) as combined_weeks
+");
+$stmt_top_week->execute([$current_school_year, $current_week, $current_school_year, $current_week]);
+$top_week_db = $stmt_top_week->fetchColumn();
+
+if ($top_week_db) {
+    $w = (int)$top_week_db;
     $start_date_obj = new DateTime($start_date_str);
     $week_start = clone $start_date_obj;
     $week_start->modify("+" . (($w - 1) * 7) . " days");
@@ -34,28 +46,15 @@ for ($w = $current_week; $w >= 1; $w--) {
     for ($i = 0; $i < 7; $i++) {
         $day = clone $week_start;
         $day->modify("+$i days");
-        if ($day->format('N') == 7) continue;
+        if ($day->format('N') == 7) continue; // Bỏ qua Chủ nhật
         if (!in_array($day->format('Y-m-d'), $excluded_list)) {
             $days++;
         }
     }
     
     if ($days > 0) {
-        $check_stmt = $pdo->prepare("SELECT COUNT(*) FROM academic_score WHERE week_number = ? AND school_year = ?");
-        $check_stmt->execute([$w, $current_school_year]);
-        $has_data = $check_stmt->fetchColumn() > 0;
-        
-        if (!$has_data) {
-            $check_stmt2 = $pdo->prepare("SELECT COUNT(*) FROM violation_record WHERE week_number = ? AND is_deleted = 0 AND school_year = ?");
-            $check_stmt2->execute([$w, $current_school_year]);
-            $has_data = $check_stmt2->fetchColumn() > 0;
-        }
-        
-        if ($has_data) {
-            $school_days = $days;
-            $top_week = $w;
-            break;
-        }
+        $school_days = $days;
+        $top_week = $w;
     }
 }
 

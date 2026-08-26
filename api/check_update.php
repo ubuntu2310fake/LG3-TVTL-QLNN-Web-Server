@@ -83,15 +83,88 @@ $updates = [
             'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
         ]
+    ],
+    '2.0.3' => [
+        'tag' => '2.0.3', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_3', "Cải thiện toàn bộ app\nCải thiện hiệu suất thông báo cho GV và HS"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+        ]
+    ],
+    '2.0.4' => [
+        'tag' => '2.0.4', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_4', "Cải thiện toàn bộ app\nCải thiện hiệu suất thông báo cho GV và HS"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+        ]
+    ],
+    '2.0.5_hf1' => [
+        'tag' => '2.0.5_hf1', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_5_hf1', "Bản vá Hotfix 2.0.5_hf1:\n- Tự động gợi ý mở liên kết mặc định trong App\n- Tối ưu hóa hiệu năng và kết nối"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'patch'       => 'patch_2.0.5_hf1.patch'
+        ]
+    ],
+    '2.0.5' => [
+        'tag' => '2.0.5', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_5', "Cải thiện toàn bộ app\nCải thiện hiệu suất thông báo cho GV và HS"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+        ]
+    ],
+    '2.0.6' => [
+        'tag' => '2.0.6', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6', "Bản cập nhật v2.0.6:\n- Tự động gợi ý mở liên kết mặc định trong App\n- Tối ưu bộ nhớ ngoài & quyền lưu trữ\n- Loại bỏ thư viện thừa (FFmpeg/News), tối ưu dung lượng app"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+        ]
+    ],
+    '2.0.6_hf1' => [
+        'tag' => '2.0.6_hf1', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf1', "Bản vá Hotfix 2.0.6_hf1:\n- Tự động gợi ý mở liên kết mặc định trong App\n- Tối ưu hóa hiệu năng và kết nối"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'patch'       => 'patch_2.0.6_hf1.patch'
+        ]
+    ],
+    '2.0.6_hf2' => [
+        'tag' => '2.0.6_hf2', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf2', "Bản vá Hotfix 2.0.6_hf2:\n- Tự động gợi ý mở liên kết mặc định trong App\n- Tối ưu hóa hiệu năng và kết nối"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'patch'       => 'patch_2.0.6_hf2.patch'
+        ]
+    ],
+    '2.0.6_hf3' => [
+        'tag' => '2.0.6_hf3', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf3', "Bản cập nhật Hotfix 3:
+- Bổ sung biểu đồ trực quan cho phần Tư vấn nghề nghiệp
+- Cải thiện tải APK nội bộ"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
     ]
-    // Sếp có thể thêm bản 1.0.2 vào đây sau này
+    // Sếp có thể thêm bản mới vào đây
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.2';
+$latest_version = '2.0.6_hf3';
+$current_patch = isset($_GET['patch']) ? (int)$_GET['patch'] : 0;
+
+$hotfixes = [];
 
 if ($current_version === $latest_version) {
-    echo json_encode(['update_available' => false]);
+    echo json_encode(['update_available' => false, 'hotfix_available' => false]);
     exit;
 }
 

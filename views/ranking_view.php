@@ -193,12 +193,12 @@
                             </div>
                             
                             <div class="popup-row">
-                                <span class="popup-label"><i class="fas fa-clipboard-list" style="color:var(--primary-color);" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Nền nếp' : 'Discipline') ?> (<?= $filter_type=='month'? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Average Short' : 'Average Short') : (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Week Short' : 'Week Short') ?>):</span>
+                                <span class="popup-label"><i class="fas fa-clipboard-list" style="color:var(--primary-color);" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Nền nếp' : 'Discipline') ?> (<?= $filter_type=='month'? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'TB' : 'Avg') : (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'W') ?>):</span>
                                 <span class="popup-val"><?= $item['nn'] ?></span>
                             </div>
 
                             <div class="popup-row">
-                                <span class="popup-label"><i class="fas fa-torii-gate" style="color:var(--danger-color);" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vpbs Label' : 'Vpbs Label') ?> (<?= $filter_type=='month'? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Average Short' : 'Average Short') : (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Week Short' : 'Week Short') ?>):</span>
+                                <span class="popup-label"><i class="fas fa-torii-gate" style="color:var(--danger-color);" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'VPBS' : 'Gate check') ?> (<?= $filter_type=='month'? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'TB' : 'Avg') : (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'W') ?>):</span>
                                 <?php if ($item['gate_points'] > 0): ?>
                                     <span class="popup-val val-minus">-<?= $item['gate_points'] ?></span>
                                 <?php else: ?>
@@ -207,19 +207,19 @@
                             </div>
 
                             <div class="popup-row">
-                                <span class="popup-label"><i class="fas fa-book-reader" style="color:#10b981;" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Periods Total' : 'Periods Total') ?>:</span>
-                                <span class="popup-val"><?= $item['period_count'] ?> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Period Unit Plural' : 'Period Unit Plural') ?></span>
+                                <span class="popup-label"><i class="fas fa-book-reader" style="color:#10b981;" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tổng tiết' : 'Total periods') ?>:</span>
+                                <span class="popup-val"><?= $item['period_count'] ?> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'tiết' : 'periods') ?></span>
                             </div>
 
                             <?php if ($item['bonus'] > 0): ?>
                             <div class="popup-row">
-                                <span class="popup-label"><i class="fas fa-star" style="color:#f59e0b;" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bonus Points' : 'Bonus Points') ?> (<?= $filter_type=='month'? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Average Short' : 'Average Short') : (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Week Short' : 'Week Short') ?>):</span>
+                                <span class="popup-label"><i class="fas fa-star" style="color:#f59e0b;" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Điểm thưởng' : 'Bonus points') ?> (<?= $filter_type=='month'? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'TB' : 'Avg') : (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'W') ?>):</span>
                                 <span class="popup-val" style="color:#f59e0b; font-weight:bold;">+<?= round($item['bonus'], 2) ?></span>
                             </div>
                             <?php endif; ?>
 
                             <div class="popup-total-area">
-                                <span style="font-size:13px; font-weight:600;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Summary Score' : 'Summary Score') ?>:</span>
+                                <span style="font-size:13px; font-weight:600;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Điểm Tổng kết' : 'Total score') ?>:</span>
                                 <span style="font-size:24px; font-weight:900; color:var(--primary-color);"><?= $item['tb'] ?></span>
                             </div>
                         </div>

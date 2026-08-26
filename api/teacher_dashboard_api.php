@@ -16,6 +16,45 @@ if (!$class_id && $_SESSION['user']['role'] === 'ADMIN') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (isset($input['action'])) {
+    if ($input['action'] == 'reset_student_password') {
+        try {
+            $student_id = (int)($input['student_id'] ?? 0);
+            if (!$student_id) throw new Exception(__('invalid_student', 'Học sinh không hợp lệ!'));
+
+            $stmtTarget = $pdo->prepare("SELECT s.*, c.name as class_name FROM student s JOIN classroom c ON s.class_id = c.id WHERE s.id = ?");
+            $stmtTarget->execute([$student_id]);
+            $targetStudent = $stmtTarget->fetch(PDO::FETCH_ASSOC);
+
+            if (!$targetStudent) throw new Exception(__('student_not_found', 'Không tìm thấy học sinh!'));
+
+            $operatorClassId = $_SESSION['user']['homeroom_class_id'] ?? 0;
+            if ($operatorClassId == 0 && !empty($_SESSION['user']['username'])) {
+                $stmtOpClass = $pdo->prepare("SELECT class_id FROM student WHERE code = ?");
+                $stmtOpClass->execute([$_SESSION['user']['username']]);
+                $operatorClassId = (int)$stmtOpClass->fetchColumn();
+            }
+
+            if ($_SESSION['user']['role'] !== 'ADMIN' && $operatorClassId != $targetStudent['class_id']) {
+                throw new Exception(__('no_permission_other_class', 'Bạn chỉ có quyền reset mật khẩu cho học sinh trong lớp của mình!'));
+            }
+
+            $defaultHash = '$2y$10$5wYTD8mBMD1wTnHX4LWt3Or8pZqVVG./Fqa36xTWJgtrecQlVXSyO';
+
+            $stmtUpd = $pdo->prepare("UPDATE users SET password_hash = ?, is_default_password = 'on' WHERE username = ?");
+            $stmtUpd->execute([$defaultHash, $targetStudent['code']]);
+
+            if ($stmtUpd->rowCount() === 0) {
+                $stmtIns = $pdo->prepare("INSERT INTO users (username, password_hash, full_name, role, is_default_password) VALUES (?, ?, ?, 'STUDENT', 'on') ON DUPLICATE KEY UPDATE password_hash = ?, is_default_password = 'on'");
+                $stmtIns->execute([$targetStudent['code'], $defaultHash, $targetStudent['name'], $defaultHash]);
+            }
+
+            echo json_encode(['status' => 'success', 'msg' => __('reset_password_success', 'Đã đặt lại mật khẩu mặc định thành công cho học sinh ') . $targetStudent['name'] . '!']);
+        } catch (Exception $e) {
+            echo json_encode(['status' => 'error', 'msg' => $e->getMessage()]);
+        }
+        exit;
+    }
+
     if ($input['action'] == 'update_exemption' && $_SESSION['user']['role'] !== 'RED_FLAG') {
         $pdo->prepare("UPDATE student SET has_exemption=?, exemption_reason=? WHERE id=?")
             ->execute([$input['is_exempt']?1:0, $input['reason'], $input['student_id']]);

@@ -818,10 +818,10 @@ if ($query_theme === 'dark') {
                 <?php endif; ?>
 
                 <?php if ($current_user['role'] == 'ADMIN'): ?>
-                    <div style="margin: 20px 0 5px 15px; font-size: 11px; color: var(--text-muted); font-weight: bold;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Admin System' : 'Admin System') ?></div>
+                    <div style="margin: 20px 0 5px 15px; font-size: 11px; color: var(--text-muted); font-weight: bold;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'HỆ THỐNG ADMIN' : 'ADMIN SYSTEM') ?></div>
                     <a href="manage_users" class="nav-link <?= is_active('manage_users.php') ?>"
-                       data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Manage Accounts' : 'Manage Accounts') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thêm, sửa, xóa và phân quyền tài khoản cho giáo viên và học sinh.' : 'Manage Accounts Desc') ?>">
-                        <i class="fas fa-users-cog" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Account' : 'Account') ?>
+                       data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Quản lý tài khoản' : 'Manage Accounts') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thêm, sửa, xóa và phân quyền tài khoản cho giáo viên và học sinh.' : 'Manage Accounts Desc') ?>">
+                        <i class="fas fa-users-cog" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tài khoản' : 'Account') ?>
                     </a>
                     <a href="manage_students" class="nav-link <?= is_active('manage_students.php') ?>"
                        data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Quản lý học sinh' : 'Manage Students') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Danh sách hồ sơ học sinh toàn trường.' : 'Manage Students Desc') ?>">
@@ -832,12 +832,12 @@ if ($query_theme === 'dark') {
                         <i class="fas fa-cogs" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Quản lý vi phạm' : 'Manage Violations') ?>
                     </a>
                     <a href="traffic_monitor" class="nav-link <?= is_active('traffic_monitor.php') ?>"
-                        data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Traffic Monitor' : 'Traffic Monitor') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Theo dõi lưu lượng truy cập và tình trạng quá tải của hệ thống.' : 'Traffic Monitor Desc') ?>">
-                         <i class="fas fa-chart-area" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Traffic Monitor' : 'Traffic Monitor') ?>
+                        data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Theo dõi lưu lượng' : 'Traffic Monitor') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Theo dõi lưu lượng truy cập và tình trạng quá tải của hệ thống.' : 'Traffic Monitor Desc') ?>">
+                         <i class="fas fa-chart-area" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lưu lượng' : 'Traffic Monitor') ?>
                     </a>
                     <a href="banned_ips_history" class="nav-link <?= is_active('banned_ips_history.php') ?>"
-                        data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ip Ban Log' : 'Ip Ban Log') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Theo dõi lịch sử các địa chỉ IP bị tường lửa khóa tự động.' : 'Ip Ban Log Desc') ?>">
-                         <i class="fas fa-shield-virus" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ip Ban Log' : 'Ip Ban Log') ?>
+                        data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lịch sử khóa IP' : 'Ip Ban Log') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Theo dõi lịch sử các địa chỉ IP bị tường lửa khóa tự động.' : 'Ip Ban Log Desc') ?>">
+                         <i class="fas fa-shield-virus" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Khóa IP' : 'Ip Ban Log') ?>
                     </a>
                     <a href="quanlydiem" class="nav-link <?= is_active('quanlydiem.php') ?>"
                         data-title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Nhập điểm thi' : 'Enter Exam Scores') ?>" data-desc="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Nhập điểm thi của HS theo các kì thi.' : 'Enter Exam Scores Desc') ?>">
