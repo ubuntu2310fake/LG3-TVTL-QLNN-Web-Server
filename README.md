@@ -17,6 +17,10 @@ Hệ thống Web Server & API quản lý thi đua nền nếp, tư vấn tâm l�
   - Web PWA & Realtime Server-Sent Events (SSE).
   - Background Worker gửi Web Push Notification đa nền tảng (`worker.php`).
   - Hỗ trợ đa ngôn ngữ (Tiếng Việt 🇻🇳, English 🇺🇸).
+ 
+## Giao diện phần mềm
+
+https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Web-Server/blob/main/ANHMINHHOA/README.MD
 
 ## 🛠️ Yêu cầu hệ thống
 
