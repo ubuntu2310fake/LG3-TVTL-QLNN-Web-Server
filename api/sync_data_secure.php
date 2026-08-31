@@ -8,7 +8,7 @@ require_once '../includes/config.php';
 try {
     $current_week = function_exists('get_current_week') ? get_current_week($pdo) : 20;
     
-    $stmtStu = $pdo->query("SELECT s.id, s.code, s.name, s.image_url, c.name as class_name FROM student s LEFT JOIN classroom c ON s.class_id = c.id WHERE c.grade < 13 AND c.name NOT LIKE 'K46%'");
+    $stmtStu = $pdo->query("SELECT s.id, s.code, s.name, s.image_url, s.thuylinh, c.name as class_name FROM student s LEFT JOIN classroom c ON s.class_id = c.id WHERE c.grade < 13 AND c.name NOT LIKE 'K46%' ORDER BY COALESCE(s.thuylinh, CAST(RIGHT(s.code, 3) AS UNSIGNED)) ASC");
     $students = $stmtStu->fetchAll(PDO::FETCH_ASSOC);
 
     $stmtCls = $pdo->query("SELECT id, name, grade FROM classroom WHERE grade < 13 AND name NOT LIKE 'K46%'");

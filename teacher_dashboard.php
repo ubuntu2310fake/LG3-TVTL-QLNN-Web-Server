@@ -120,7 +120,7 @@ if ($class_id > 0) {
         $main_teacher = $stmtTeacher->fetch();
 
         // Lấy danh sách học sinh
-        $stmtStudents = $pdo->prepare("SELECT * FROM student WHERE class_id = ? ORDER BY SUBSTRING_INDEX(name, ' ', -1) ASC");
+        $stmtStudents = $pdo->prepare("SELECT * FROM student WHERE class_id = ? ORDER BY COALESCE(thuylinh, 9999) ASC, SUBSTRING_INDEX(name, ' ', -1) ASC");
         $stmtStudents->execute([$class_id]);
         $students = $stmtStudents->fetchAll();
     }

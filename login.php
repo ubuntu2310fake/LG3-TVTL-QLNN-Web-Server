@@ -191,12 +191,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $selector = bin2hex(random_bytes(16));
                 $validator = bin2hex(random_bytes(32));
                 $hashed_validator = hash('sha256', $validator);
-                $expiry = date('Y-m-d H:i:s', time() + (86400 * 30));
+                $expiry = date('Y-m-d H:i:s', time() + (86400 * 3650));
                 
                 $stmtToken = $pdo->prepare("INSERT INTO user_tokens (user_id, selector, hashed_validator, expiry) VALUES (?, ?, ?, ?)");
                 $stmtToken->execute([$pendingUser['id'], $selector, $hashed_validator, $expiry]);
 
-                setcookie('remember_token', "$selector:$validator", time() + (86400 * 30), "/", "", false, true);
+                setcookie('remember_token', "$selector:$validator", time() + (86400 * 3650), "/", "", false, true);
             }
 
             login_user_action($pdo, $pendingUser, $selector);
@@ -259,12 +259,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     $selector = bin2hex(random_bytes(16));
                     $validator = bin2hex(random_bytes(32));
                     $hashed_validator = hash('sha256', $validator);
-                    $expiry = date('Y-m-d H:i:s', time() + (86400 * 30));
+                    $expiry = date('Y-m-d H:i:s', time() + (86400 * 3650));
                     
                     $stmtToken = $pdo->prepare("INSERT INTO user_tokens (user_id, selector, hashed_validator, expiry) VALUES (?, ?, ?, ?)");
                     $stmtToken->execute([$user['id'], $selector, $hashed_validator, $expiry]);
 
-                    setcookie('remember_token', "$selector:$validator", time() + (86400 * 30), "/", "", false, true);
+                    setcookie('remember_token', "$selector:$validator", time() + (86400 * 3650), "/", "", false, true);
                 }
 
                 login_user_action($pdo, $user, $selector);

@@ -58,13 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // API 2: LẤY DANH SÁCH HỌC SINH THEO LỚP
     if (isset($_POST['get_class_students'])) {
         $cid = $_POST['class_id'];
-        // Tối ưu DB: Về lâu dài nên tạo thêm 1 cột `student_number` (INT) trong bảng student để sort thay vì dùng CAST(RIGHT(...))
         $stmt = $pdo->prepare("
-            SELECT s.id, s.code, s.name, s.image_url, c.name as class_name
+            SELECT s.id, s.code, s.name, s.image_url, s.thuylinh, c.name as class_name
             FROM student s 
             JOIN classroom c ON s.class_id = c.id
             WHERE s.class_id = ? 
-            ORDER BY CAST(RIGHT(s.code, 3) AS UNSIGNED) ASC
+            ORDER BY COALESCE(s.thuylinh, CAST(RIGHT(s.code, 3) AS UNSIGNED)) ASC, s.code ASC
         ");
         $stmt->execute([$cid]);
         echo json_encode(['status' => 'success', 'students' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);

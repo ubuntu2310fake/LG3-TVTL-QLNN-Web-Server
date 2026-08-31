@@ -33,11 +33,28 @@ if ($action === 'preview' || $action === 'import') {
 
         $data = [];
         foreach ($rows as $row) {
-            // Giả định cột theo format cũ: [0] SBD, [1] Tên, [2] Lớp, [3] Ngày sinh
-            $code = trim($row[0] ?? '');
-            $name = trim($row[1] ?? '');
-            $class_name = trim($row[2] ?? '');
-            $dob = trim($row[3] ?? '');
+            $col0 = trim($row[0] ?? '');
+            $col1 = trim($row[1] ?? '');
+            $col2 = trim($row[2] ?? '');
+            $col3 = trim($row[3] ?? '');
+            $col4 = trim($row[4] ?? '');
+
+            if (empty($col0) && empty($col1)) continue;
+
+            // Tự động nhận diện nếu cột 0 là STT số (1, 2, 3...) và cột 1 là Mã HS
+            if (is_numeric($col0) && !empty($col1)) {
+                $thuylinh = (int)$col0;
+                $code = $col1;
+                $name = $col2;
+                $class_name = $col3;
+                $dob = $col4;
+            } else {
+                $code = $col0;
+                $name = $col1;
+                $class_name = $col2;
+                $dob = $col3;
+                $thuylinh = is_numeric($col4) ? (int)$col4 : (preg_match('/(\d{2,3})$/', $code, $m) ? (int)$m[1] : null);
+            }
 
             if (empty($code) || empty($name)) continue;
 
@@ -45,7 +62,8 @@ if ($action === 'preview' || $action === 'import') {
                 'code' => $code,
                 'name' => $name,
                 'class_name' => $class_name,
-                'dob' => $dob
+                'dob' => $dob,
+                'thuylinh' => $thuylinh
             ];
         }
 
@@ -67,6 +85,7 @@ if ($action === 'preview' || $action === 'import') {
                 $code = $item['code'];
                 $name = $item['name'];
                 $className = $item['class_name'];
+                $thuylinh = $item['thuylinh'];
 
                 // 1. Kiểm tra và tạo Lớp học nếu chưa có
                 $class_id = null;
@@ -94,12 +113,12 @@ if ($action === 'preview' || $action === 'import') {
 
                 if ($stu_id) {
                     // Update nếu đã tồn tại
-                    $stmtUpdateStu = $pdo->prepare("UPDATE student SET name = ?, class_id = ? WHERE code = ?");
-                    $stmtUpdateStu->execute([$name, $class_id, $code]);
+                    $stmtUpdateStu = $pdo->prepare("UPDATE student SET name = ?, class_id = ?, thuylinh = COALESCE(?, thuylinh) WHERE code = ?");
+                    $stmtUpdateStu->execute([$name, $class_id, $thuylinh, $code]);
                 } else {
                     // Insert mới
-                    $stmtInsertStu = $pdo->prepare("INSERT INTO student (code, name, class_id) VALUES (?, ?, ?)");
-                    $stmtInsertStu->execute([$code, $name, $class_id]);
+                    $stmtInsertStu = $pdo->prepare("INSERT INTO student (code, name, class_id, thuylinh) VALUES (?, ?, ?, ?)");
+                    $stmtInsertStu->execute([$code, $name, $class_id, $thuylinh]);
                 }
             }
 

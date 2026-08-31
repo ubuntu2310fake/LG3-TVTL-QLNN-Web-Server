@@ -130,7 +130,7 @@ if (!$isIframe) {
                     let html = '';
                     data.data.forEach((row, index) => {
                         html += `<tr>
-                                    <td>${index + 1}</td>
+                                    <td><b>${row.thuylinh !== null && row.thuylinh !== undefined ? row.thuylinh : (index + 1)}</b></td>
                                     <td><b>${row.code}</b></td>
                                     <td>${row.name}</td>
                                     <td><span style="background: var(--bg-input); padding: 3px 8px; border-radius: 4px;">${row.class_name}</span></td>

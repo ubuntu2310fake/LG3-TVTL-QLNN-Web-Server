@@ -83,7 +83,7 @@ $my_class = $pdo->prepare("SELECT * FROM classroom WHERE id = ?"); $my_class->ex
 $teacher = $pdo->prepare("SELECT full_name FROM users WHERE homeroom_class_id = ? LIMIT 1"); $teacher->execute([$class_id]); $teacher = $teacher->fetchColumn() ?: __('unassigned', 'Chưa phân công');
 
 // 2. Học sinh & Vi phạm
-$students = $pdo->prepare("SELECT id, name, code, has_exemption, exemption_reason FROM student WHERE class_id = ? ORDER BY SUBSTRING_INDEX(name, ' ', -1) ASC");
+$students = $pdo->prepare("SELECT id, name, code, thuylinh, has_exemption, exemption_reason FROM student WHERE class_id = ? ORDER BY COALESCE(thuylinh, 9999) ASC, SUBSTRING_INDEX(name, ' ', -1) ASC");
 $students->execute([$class_id]); $students = $students->fetchAll(PDO::FETCH_ASSOC);
 
 $sqlVio = "SELECT vr.id, vr.recorded_violation_name, vt.content_en AS recorded_violation_name_en, vr.recorded_points, vr.date_created, vr.reporter, s.name as student_name 

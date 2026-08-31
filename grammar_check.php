@@ -43,6 +43,7 @@ if (isset($_GET['local_api'])) {
     }
     
     $system_msg = "You are a professional grammar checker. Analyze the user's text (in English or Vietnamese, depending on the language option) for spelling, grammar, punctuation, and style issues.
+PAY SPECIAL ATTENTION TO PROPER NOUNS: Any names of people, cities, countries, or specific entities MUST be capitalized. If they are in lowercase (e.g., 'ngo thuy linh' instead of 'Ngo Thuy Linh'), report it as an issue.
 Return the result strictly as a valid JSON object matching the following structure. Do not output any markdown code blocks, just raw JSON.
 JSON Structure:
 {

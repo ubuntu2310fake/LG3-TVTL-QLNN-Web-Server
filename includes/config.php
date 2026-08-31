@@ -9,7 +9,11 @@ require_once __DIR__ . '/db_config.php';
 // (Đảm bảo SECRET_KEY đã được định nghĩa bên trong setup_variables.php)
 
 
-if (session_status() === PHP_SESSION_NONE && php_sapi_name() !== 'cli') session_start();
+if (session_status() === PHP_SESSION_NONE && php_sapi_name() !== 'cli') {
+    ini_set('session.gc_maxlifetime', 315360000);
+    session_set_cookie_params(315360000);
+    session_start();
+}
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 // LOCALIZATION ENGINE

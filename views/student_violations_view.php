@@ -53,7 +53,7 @@ include 'includes/header.php';
     <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:20px; gap:10px;">
         <h2 style="margin:0; color:var(--danger-color); font-size:20px;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vi phạm của tôi' : 'My Violations') ?></h2>
         <div style="background:var(--bg-hover); color:var(--danger-color); border:1px solid var(--border-color); padding:8px 15px; border-radius:20px; font-weight:bold; font-size:14px;">
-            <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Total Minus' : 'Total Minus') ?>: -<?= $total_minus ?>
+            <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tổng điểm trừ' : 'Total Minus') ?>: -<?= $total_minus ?>
         </div>
     </div>
     
@@ -64,16 +64,16 @@ include 'includes/header.php';
     </div>
 
     <h4 style="margin:0 0 15px 0; color:var(--text-muted); border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-        <i class="fas fa-user-tag" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Personal Details' : 'Personal Details') ?>
+        <i class="fas fa-user-tag" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chi tiết cá nhân' : 'Personal Details') ?>
     </h4>
     <?php if ($my_vios): ?>
         <table class="rank-table">
             <thead>
                 <tr>
-                    <th width="120"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Time Label' : 'Time Label') ?></th>
+                    <th width="120"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thời gian' : 'Time') ?></th>
                     <th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Nội dung vi phạm' : 'Violation Content') ?></th>
                     <th width="100" style="text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Điểm trừ' : 'Minus Points') ?></th>
-                    <th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Note Label' : 'Note Label') ?></th>
+                    <th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ghi chú' : 'Note') ?></th>
                 </tr>
             </thead>
             <tbody>

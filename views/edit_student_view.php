@@ -112,7 +112,12 @@ include 'includes/header.php';
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:15px;">
+            <div>
+                <label style="font-weight:bold; font-size:13px; color:var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'STT trong lớp:' : 'Class Ordinal (STT):') ?></label>
+                <input type="number" name="thuylinh" value="<?= htmlspecialchars($student->thuylinh ?? '') ?>" class="win-input" placeholder="VD: 1, 2, 3..." min="1" max="999">
+            </div>
+
             <div>
                 <label style="font-weight:bold; font-size:13px; color:var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Mã HS (SBD):' : 'Mã HS (SBD):') ?></label>
                 <input type="text" value="<?= htmlspecialchars($student->code) ?>" class="win-input" readonly style="background:var(--bg-hover); color:var(--text-muted);">

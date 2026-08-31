@@ -61,7 +61,7 @@ require_once 'includes/header.php';
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <div style="font-weight: 600;"><?php echo htmlspecialchars($s['name']); ?></div>
-                        <div style="font-size: 11px; color:var(--text-muted);"><?php echo htmlspecialchars($s['code']); ?></div>
+                        <div style="font-size: 11px; color:var(--text-muted);"><?php echo (!empty($s['thuylinh']) ? 'STT ' . htmlspecialchars($s['thuylinh']) . ' • ' : '') . htmlspecialchars($s['code']); ?></div>
                     </div>
                     <?php if ($s['has_exemption']): ?>
                         <i class="fas fa-shield-alt" aria-hidden="true" style="color:#10b981;" title="<?php echo htmlspecialchars($s['exemption_reason']); ?>"></i>

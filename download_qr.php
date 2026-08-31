@@ -10,10 +10,10 @@ $class_id = isset($_GET['class_id']) ? $_GET['class_id'] : '';
 
 // 1. Fetch students
 if (!empty($class_id)) {
-    $stmt = $pdo->prepare("SELECT s.*, c.name as class_name FROM student s JOIN classroom c ON s.class_id = c.id WHERE s.class_id = ? AND c.grade < 13 AND c.name NOT LIKE 'K46%'");
+    $stmt = $pdo->prepare("SELECT s.*, c.name as class_name FROM student s JOIN classroom c ON s.class_id = c.id WHERE s.class_id = ? AND c.grade < 13 AND c.name NOT LIKE 'K46%' ORDER BY COALESCE(s.thuylinh, CAST(RIGHT(s.code, 3) AS UNSIGNED)) ASC, s.code ASC");
     $stmt->execute([$class_id]);
 } else {
-    $stmt = $pdo->prepare("SELECT s.*, c.name as class_name FROM student s JOIN classroom c ON s.class_id = c.id WHERE c.grade < 13 AND c.name NOT LIKE 'K46%'");
+    $stmt = $pdo->prepare("SELECT s.*, c.name as class_name FROM student s JOIN classroom c ON s.class_id = c.id WHERE c.grade < 13 AND c.name NOT LIKE 'K46%' ORDER BY c.grade ASC, LENGTH(c.name) ASC, c.name ASC, COALESCE(s.thuylinh, CAST(RIGHT(s.code, 3) AS UNSIGNED)) ASC, s.code ASC");
     $stmt->execute();
 }
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,9 +47,13 @@ if ($zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) 
         $qrcode = new QRCode($options);
         $image_data = $qrcode->render($qr_data);
         
-        // Clean filenames and path
+        // Clean filenames and path (Định dạng: STT_MÃ HS_TÊN)
+        $stt = !empty($student['thuylinh']) ? $student['thuylinh'] : (preg_match('/(\d{2,3})$/', $student['code'], $m) ? (int)$m[1] : '');
+        $sttPrefix = $stt !== '' ? str_pad($stt, 2, '0', STR_PAD_LEFT) . '_' : '';
+        $rawFileName = $sttPrefix . $student['code'] . '_' . $student['name'];
+        
         $class_folder = preg_replace('/[\\/\\\:\*\?"<>\|]/', '_', $student['class_name']);
-        $student_file = preg_replace('/[\\/\\\:\*\?"<>\|]/', '_', $student['code'] . ' - ' . $student['name']) . '.' . $ext;
+        $student_file = preg_replace('/[\\/\\\:\*\?"<>\|]/', '_', $rawFileName) . '.' . $ext;
         $zip_path = $class_folder . '/' . $student_file;
         
         $zip->addFromString($zip_path, $image_data);

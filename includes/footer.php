@@ -699,7 +699,7 @@ window.a11yAnnounce = function(text) {
         }
 
         function updateEtClock() {
-            const now = new Date();
+            const now = window.getAppCurrentDate ? window.getAppCurrentDate() : new Date();
             const d = String(now.getDate()).padStart(2, '0'); const m = String(now.getMonth() + 1).padStart(2, '0'); const y = now.getFullYear();
             const h = String(now.getHours()).padStart(2, '0'); const min = String(now.getMinutes()).padStart(2, '0'); const s = String(now.getSeconds()).padStart(2, '0');
             const el = document.getElementById('etClock'); if(el) el.innerText = `${d}/${m}/${y} ${h}:${min}:${s}`;
@@ -775,9 +775,14 @@ window.a11yAnnounce = function(text) {
 </script>
 
 <script>
+    window.getAppCurrentDate = function() {
+        const offset = parseInt(localStorage.getItem('app_custom_time_offset') || '0', 10);
+        return new Date(Date.now() + offset);
+    };
+
     function startLiveClock() {
         function update() {
-            const now = new Date();
+            const now = window.getAppCurrentDate();
             const day = String(now.getDate()).padStart(2, '0'); const month = String(now.getMonth() + 1).padStart(2, '0'); const year = now.getFullYear();
             const time = now.toLocaleTimeString('vi-VN', { hour12: false });
             const fullDateTime = `${day}/${month}/${year} ${time}`;

@@ -47,8 +47,8 @@ $stmtCnt->execute($params);
 $totalRows = $stmtCnt->fetchColumn();
 $totalPages = ceil($totalRows / $limit);
 
-// [SỬA] Fetch data: Thêm LENGTH(c.name) để sort tự nhiên (10A2 trước 10A10)
-$sql .= " ORDER BY c.grade ASC, LENGTH(c.name) ASC, c.name ASC, s.code ASC LIMIT $limit OFFSET $offset";
+// [SỬA] Fetch data: Thêm LENGTH(c.name) để sort tự nhiên và COALESCE(s.thuylinh, ...)
+$sql .= " ORDER BY c.grade ASC, LENGTH(c.name) ASC, c.name ASC, COALESCE(s.thuylinh, CAST(RIGHT(s.code, 3) AS UNSIGNED)) ASC, s.code ASC LIMIT $limit OFFSET $offset";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);

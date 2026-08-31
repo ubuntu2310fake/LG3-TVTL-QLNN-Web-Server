@@ -78,14 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $selector = bin2hex(random_bytes(16));
                 $validator = bin2hex(random_bytes(32));
                 $hashed_validator = hash('sha256', $validator);
-                $expiry = date('Y-m-d H:i:s', time() + (86400 * 30)); // 30 ngày
+                $expiry = date('Y-m-d H:i:s', time() + (86400 * 3650)); // 10 years
                 
                 $pdo->prepare("INSERT INTO user_tokens (user_id, selector, hashed_validator, expiry) VALUES (?, ?, ?, ?)")->execute([$user['id'], $selector, $hashed_validator, $expiry]);
                 
                 $new_remember_token = "$selector:$validator";
                 
                 // Set cookie giống hệt web
-                setcookie('remember_token', $new_remember_token, time() + (86400 * 30), "/", "", false, true);
+                setcookie('remember_token', $new_remember_token, time() + (86400 * 3650), "/", "", false, true);
             }
         }
     }
@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Trả cookie PHPSESSID về cho an toàn thêm
-        setcookie('PHPSESSID', $sessId, 0, "/", "", false, true);
+        setcookie('PHPSESSID', $sessId, time() + (86400 * 3650), "/", "", false, true);
         setcookie('device_model', $dev, time() + (86400 * 365), "/", "", false, false);
 
         echo json_encode([

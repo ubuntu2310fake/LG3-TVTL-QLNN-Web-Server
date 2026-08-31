@@ -59,7 +59,7 @@ $totalStudents = $stmtCount->fetchColumn();
 $totalPages = ceil($totalStudents / $limit);
 
 // Lấy dữ liệu 
-$sql = "SELECT s.id, s.code, s.name, s.dob, s.has_pending_changes, s.image_url, c.name as class_name,
+$sql = "SELECT s.id, s.code, s.name, s.dob, s.has_pending_changes, s.image_url, s.thuylinh, c.name as class_name,
                u.role, hc.name as homeroom_class_name
         FROM student s 
         JOIN classroom c ON s.class_id = c.id 
@@ -69,7 +69,8 @@ $sql = "SELECT s.id, s.code, s.name, s.dob, s.has_pending_changes, s.image_url, 
         ORDER BY 
             CAST(SUBSTRING(s.code, 2, 2) AS UNSIGNED) DESC, 
             CAST(SUBSTRING(s.code, 5, LENGTH(s.code) - 7) AS UNSIGNED) ASC, 
-            CAST(RIGHT(s.code, 3) AS UNSIGNED) ASC 
+            COALESCE(s.thuylinh, CAST(RIGHT(s.code, 3) AS UNSIGNED)) ASC,
+            s.code ASC 
         LIMIT $limit OFFSET $offset";
 
 $students = $pdo->prepare($sql); 

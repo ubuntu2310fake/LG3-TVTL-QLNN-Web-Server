@@ -141,7 +141,7 @@ const GCApp = (function() {
     let currentLangCode = '<?= ($_SESSION['lang'] ?? 'vi') === 'en' ? 'en' : 'vi' ?>';
 
     const escapeHTML = str => str.replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
-    const escapeRegExp = string => string.replace(/[.*+?^${}()|[\]\]/g, '\$&');
+    const escapeRegExp = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     return {
         init: function() {

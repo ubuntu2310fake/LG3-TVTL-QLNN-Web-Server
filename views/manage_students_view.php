@@ -103,11 +103,12 @@ include 'includes/header.php';
 
     <div class="table-responsive">
         <table class="rank-table">
-            <thead><tr><th width="60"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ảnh' : 'Image') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Mã HS' : 'Student Code') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ Tên' : 'Full Name') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lớp' : 'Class') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày sinh' : 'Date of Birth') ?></th><th width="100"></th></tr></thead>
+            <thead><tr><th width="60"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ảnh' : 'Image') ?></th><th width="50" style="text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'STT' : 'STT') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Mã HS' : 'Student Code') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ Tên' : 'Full Name') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lớp' : 'Class') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày sinh' : 'Date of Birth') ?></th><th width="100"></th></tr></thead>
             <tbody>
                 <?php if ($students): foreach ($students as $s): ?>
                 <tr id="row_<?= $s->code ?>">
                     <td><img src="<?= $s->image_url ? '/'.$s->image_url : '/static/default.png' ?>" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
+                    <td style="text-align:center; font-weight:bold; color:var(--accent-color);"><?= htmlspecialchars($s->thuylinh ?? '') ?></td>
                     <td style="font-weight:bold;"><?= htmlspecialchars($s->code) ?></td>
                     <td style="text-align:left;">
                         <?php if ($s->has_pending_changes && $s->pending_name): ?>
@@ -130,7 +131,7 @@ include 'includes/header.php';
                     </td>
                 </tr>
                 <?php endforeach; else: ?>
-                <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không tìm thấy học sinh nào.' : 'No students found.') ?></td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không tìm thấy học sinh nào.' : 'No students found.') ?></td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

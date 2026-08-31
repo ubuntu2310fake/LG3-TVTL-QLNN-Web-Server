@@ -1,6 +1,6 @@
 {
-  "name": "Siêu ứng dụng (NỘI BỘ NHÓM)",
-  "short_name": "LG3_NOIBO",
+  "name": "Siêu ứng dụng LG3",
+  "short_name": "LG3 Super App",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

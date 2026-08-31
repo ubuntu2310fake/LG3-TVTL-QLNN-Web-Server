@@ -68,8 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Update Student
-            $sql = "UPDATE student SET name=?, dob=?, class_id=?, image_url=? WHERE id=?";
-            $pdo->prepare($sql)->execute([$name, $dob, $class_id, $image_url, $student->id]);
+            $thuylinh = isset($_POST['thuylinh']) && $_POST['thuylinh'] !== '' ? (int)$_POST['thuylinh'] : null;
+            $sql = "UPDATE student SET name=?, dob=?, class_id=?, image_url=?, thuylinh=? WHERE id=?";
+            $pdo->prepare($sql)->execute([$name, $dob, $class_id, $image_url, $thuylinh, $student->id]);
 
             // Update User
             if ($linked_user) {

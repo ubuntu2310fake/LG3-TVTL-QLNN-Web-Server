@@ -649,7 +649,7 @@ include 'includes/header.php';
                 html += `<div role="button" tabindex="0" class="student-card" onclick="window.selectStudent('${s.id}', '${s.name}', '${s.class_name}', '${s.code}', '${s.image_url}')">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <img src="${avatarUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
-                                <div><div class="st-name" style="margin-bottom:0;">${s.name}</div><div class="st-code" style="margin-top:2px;">${s.code}</div></div>
+                                <div><div class="st-name" style="margin-bottom:0;">${s.name}</div><div class="st-code" style="margin-top:2px;">${s.thuylinh ? 'STT ' + s.thuylinh + ' • ' : ''}${s.code}</div></div>
                             </div>
                          </div>`; 
             });
