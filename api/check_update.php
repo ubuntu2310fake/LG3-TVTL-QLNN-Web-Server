@@ -197,12 +197,23 @@ $updates = [
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
             'universal'   => 'LG3_TVTL_QLNN_Android.apk'
         ]
+    ],
+    '2.0.6_hf8' => [
+        'tag' => '2.0.6_hf8', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf8', "Bản cập nhật Hotfix 8:
+- Tối ưu hóa kết nối HTTP Keep-Alive toàn diện qua AppConfig.client
+- Tăng tốc độ tải dữ liệu và giảm thiểu độ trễ mạng"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
     ]
     // Sếp có thể thêm bản mới vào đây
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.6_hf7';
+$latest_version = '2.0.6_hf8';
 $current_patch = isset($_GET['patch']) ? (int)$_GET['patch'] : 0;
 
 $hotfixes = [];
