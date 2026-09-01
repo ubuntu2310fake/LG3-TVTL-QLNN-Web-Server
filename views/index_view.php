@@ -106,7 +106,7 @@ include 'includes/header.php';
                     <a href="gate_check.php" class="dash-action-btn"><i class="fas fa-edit" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Trực cổng' : 'Gate Duty') ?></a>
                     <a href="teacher_dashboard.php" class="dash-action-btn"><i class="fas fa-chalkboard-teacher" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lớp Của Tôi' : 'My Class') ?></a>
                 <?php elseif ($user && $user['role'] == 'STUDENT'): ?>
-                    <a href="my_violations.php" class="dash-action-btn"><i class="fas fa-user-check" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi Của Tôi' : 'My Violations') ?></a>
+                    <a href="student_violations.php" class="dash-action-btn"><i class="fas fa-user-check" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi Của Tôi' : 'My Violations') ?></a>
                     <a href="ranking.php" class="dash-action-btn" style="color:#92400e; border-color:#fcd34d;"><i class="fas fa-trophy" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xem Đầy Đủ BXH' : 'View Full Ranking') ?></a>
                 <?php endif; ?>
 

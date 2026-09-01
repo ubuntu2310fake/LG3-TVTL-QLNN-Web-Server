@@ -71,7 +71,7 @@ function call_ai_with_fallback($system_msg, $user_text) {
         ],
         'generationConfig' => [
             'temperature' => 0.7,
-            'maxOutputTokens' => 2000
+            'maxOutputTokens' => 8192
         ]
     ];
     
@@ -80,7 +80,7 @@ function call_ai_with_fallback($system_msg, $user_text) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($gemini_payload));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     
     $res = curl_exec($ch);
@@ -102,7 +102,7 @@ function call_ai_with_fallback($system_msg, $user_text) {
             ['role' => 'user', 'content' => $user_text]
         ],
         'model' => 'llama3-8b-8192',
-        'max_tokens' => 2000,
+        'max_tokens' => 8192,
         'temperature' => 0.7
     ];
     

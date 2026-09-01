@@ -442,7 +442,7 @@
                 }
                 const anonChk = document.getElementById('tvtl-anon-checkbox');
                 if (anonChk) {
-                    this.toggleAnon(anonChk.checked && isTeacher);
+                    this.toggleAnon(anonChk.checked && isTeacher, false);
                 }
 
                 document.getElementById('tvtl-chat-msgs').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></div>';
@@ -452,8 +452,30 @@
                 if(chatInterval) clearInterval(chatInterval);
                 chatInterval = setInterval(() => loadMsgs(false), 3000);
             },
-            toggleAnon: function(isAnon) {
+            toggleAnon: async function(isAnon, isFromUserEvent = true) {
                 const banner = document.getElementById('tvtl-anon-banner');
+                const chk = document.getElementById('tvtl-anon-checkbox');
+                
+                if (isFromUserEvent) {
+                    if (isAnon) {
+                        if (!confirm(window.LANG && window.LANG.confirm_anon_on || "Hệ thống sẽ xóa toàn bộ lịch sử trò chuyện hiện tại với Thầy Cô này để bắt đầu phiên Ẩn danh. Bạn có chắc chắn muốn bật?")) {
+                            if (chk) chk.checked = false;
+                            return;
+                        }
+                    } else {
+                        if (!confirm(window.LANG && window.LANG.confirm_anon_off || "Hệ thống sẽ xóa toàn bộ lịch sử trò chuyện Ẩn danh hiện tại với Thầy Cô này để quay lại phiên bình thường. Bạn có chắc chắn muốn tắt?")) {
+                            if (chk) chk.checked = true;
+                            return;
+                        }
+                    }
+
+                    // Xóa lịch sử chat
+                    if (currentPartnerId) {
+                        await fetchPy('/api/chat/clear', { method: 'POST', body: JSON.stringify({ partner_id: currentPartnerId }) });
+                        loadMsgs(true); // reload lại cửa sổ chat trống
+                    }
+                }
+
                 if (banner) {
                     banner.style.display = (isAnon && currentPartnerIsTeacher) ? 'block' : 'none';
                 }

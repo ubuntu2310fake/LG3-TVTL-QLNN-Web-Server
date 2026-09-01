@@ -428,7 +428,24 @@ if ($endpoint === '/api/chat/delete') {
     exit;
 }
 
-// 11. UPLOAD CHAT IMAGE
+// 11. CLEAR ALL CHAT MESSAGES WITH A PARTNER
+if ($endpoint === '/api/chat/clear') {
+    $inputData = json_decode(file_get_contents('php://input'), true) ?: [];
+    $partner_id = $inputData['partner_id'] ?? null;
+    
+    if (!$partner_id) {
+        echo json_encode(['success' => false, 'msg' => (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thiếu partner_id' : 'Missing partner_id')]);
+        exit;
+    }
+    
+    $stmt = $pdo->prepare("DELETE FROM psychology_messages WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)");
+    $stmt->execute([$my_id, $partner_id, $partner_id, $my_id]);
+    
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+// 12. UPLOAD CHAT IMAGE
 if ($endpoint === '/api/chat/upload') {
 
     
