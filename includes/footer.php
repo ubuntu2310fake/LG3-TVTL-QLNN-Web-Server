@@ -323,10 +323,25 @@
 
         async function loadMsgs(force = false) {
             if(!currentPartnerId) return;
-            const msgs = await fetchPy('/api/chat/get', { method:'POST', body:JSON.stringify({partner_id:currentPartnerId}) });
-            if(!msgs || !Array.isArray(msgs)) return;
+            const res = await fetchPy('/api/chat/get&include_info=1', { method:'POST', body:JSON.stringify({partner_id:currentPartnerId}) });
+            if(!res || !res.messages || !Array.isArray(res.messages)) return;
+            const msgs = res.messages;
+            if (res.partner_name) {
+                document.getElementById('tvtl-chat-title').innerText = res.partner_name;
+            }
             
             const box = document.getElementById('tvtl-chat-msgs');
+            if (msgs.length > 0) {
+                let isAnonNow = false;
+                for (let i = msgs.length - 1; i >= 0; i--) {
+                    if (msgs[i].is_anonymous == 1) { isAnonNow = true; break; }
+                }
+                const chk = document.getElementById('tvtl-anon-checkbox');
+                if (chk && chk.checked !== isAnonNow) {
+                    chk.checked = isAnonNow;
+                    StudentChatApp.toggleAnon(isAnonNow, false);
+                }
+            }
             let html = '';
             
             msgs.forEach(m => {
@@ -495,6 +510,17 @@
                 const isAnon = currentPartnerIsTeacher && document.getElementById('tvtl-anon-checkbox')?.checked;
                 
                 const box = document.getElementById('tvtl-chat-msgs');
+            if (msgs.length > 0) {
+                let isAnonNow = false;
+                for (let i = msgs.length - 1; i >= 0; i--) {
+                    if (msgs[i].is_anonymous == 1) { isAnonNow = true; break; }
+                }
+                const chk = document.getElementById('tvtl-anon-checkbox');
+                if (chk && chk.checked !== isAnonNow) {
+                    chk.checked = isAnonNow;
+                    StudentChatApp.toggleAnon(isAnonNow, false);
+                }
+            }
                 const anonTag = isAnon ? '<span style="font-size:10px; font-weight:bold; color:#8b5cf6; margin-bottom:2px; display:block;"><i class="fa-solid fa-user-secret"></i> Ẩn danh</span>' : '';
                 box.innerHTML += `<div class="msg-row msg-me"><div class="bubble" style="opacity:0.6">${anonTag}${txt.replace(/</g, "&lt;")}</div></div>`;
                 box.scrollTop = box.scrollHeight;

@@ -175,12 +175,34 @@ $updates = [
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
             'universal'   => 'LG3_TVTL_QLNN_Android.apk'
         ]
+    ],
+    '2.0.6_hf6' => [
+        'tag' => '2.0.6_hf6', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf6', "Bản cập nhật Hotfix 6:
+- Tích hợp định dạng khối mã/sao chép mã trong AI tư vấn
+- Xác nhận xóa lịch sử khi chuyển chế độ ẩn danh"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
+    ],
+    '2.0.6_hf7' => [
+        'tag' => '2.0.6_hf7', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf7', "Bản cập nhật Hotfix 7:
+- Tự động nhận diện chế độ ẩn danh và đồng bộ thông tin đối tác chat
+- Tối ưu giao diện phòng chat tư vấn"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
     ]
     // Sếp có thể thêm bản mới vào đây
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.6_hf5';
+$latest_version = '2.0.6_hf7';
 $current_patch = isset($_GET['patch']) ? (int)$_GET['patch'] : 0;
 
 $hotfixes = [];

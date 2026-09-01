@@ -294,9 +294,10 @@ if ($endpoint === '/api/friends/unfriend') {
 if ($endpoint === '/api/chat/get') {
     $inputData = json_decode(file_get_contents('php://input'), true) ?: [];
     $pid = $inputData['partner_id'] ?? null;
+    $include_info = isset($_GET['include_info']) && $_GET['include_info'] == '1';
     
     if (!$pid) {
-        echo json_encode([]);
+        echo json_encode($include_info ? ['messages' => []] : []);
         exit;
     }
     
@@ -311,6 +312,7 @@ if ($endpoint === '/api/chat/get') {
     $stmt->execute([$my_id, $pid, $pid, $my_id]);
     $msgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
+    $is_anon_latest = 0;
     foreach ($msgs as &$m) {
         if ($m['created_at']) {
             $dt = new DateTime($m['created_at']);
@@ -319,9 +321,27 @@ if ($endpoint === '/api/chat/get') {
         if (!$m['reactions']) {
             $m['reactions'] = null;
         }
+        if ($m['is_anonymous']) {
+            $is_anon_latest = 1;
+        }
     }
     
-    echo json_encode($msgs);
+    if ($include_info) {
+        $stmt_user = $pdo->prepare("SELECT full_name FROM users WHERE id = ?");
+        $stmt_user->execute([$pid]);
+        $real_name = $stmt_user->fetchColumn() ?: 'Unknown';
+        
+        $display_name = $is_anon_latest ? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Học sinh ẩn danh 🛡️' : 'Anonymous Student 🛡️') : $real_name;
+        
+        echo json_encode([
+            'messages' => $msgs,
+            'partner_name' => $display_name,
+            'real_name' => $real_name,
+            'is_anonymous' => $is_anon_latest == 1
+        ]);
+    } else {
+        echo json_encode($msgs);
+    }
     exit;
 }
 
