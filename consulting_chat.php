@@ -1,6 +1,7 @@
 <?php
 // File: consulting_chat.php - LOCAL PHP CHAT & FRIENDSHIP SERVICE
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+file_put_contents(__DIR__."/chat_debug.log", date("Y-m-d H:i:s")." - ENDPOINT: " . ($_GET["endpoint"]??"") . " - INPUT: ".file_get_contents("php://input").PHP_EOL, FILE_APPEND);
 header('Content-Type: application/json');
 require_once 'includes/config.php';
 
@@ -46,8 +47,11 @@ if ($endpoint === '/api/teacher/get_conversations') {
     }
     
     // Lấy tất cả các học sinh mà giáo viên này đã từng chat
-    $stmt = $pdo->prepare("
-        SELECT u.id as partner_id, u.full_name as partner_name, u.avatar, u.role as partner_role, u.last_active, latest.last_msg_time, latest.is_anon_latest
+$stmt = $pdo->prepare("
+        SELECT u.id as partner_id, u.full_name as partner_name, u.avatar, u.role as partner_role, u.last_active, latest.last_msg_time, latest.is_anon_latest,
+               (SELECT COUNT(*) FROM psychology_messages WHERE sender_id = u.id AND receiver_id = ? AND (is_read = 0 OR is_read IS NULL)) as unread_count,
+               (SELECT content FROM psychology_messages WHERE (sender_id = u.id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.id) ORDER BY created_at DESC LIMIT 1) as last_msg_content,
+               (SELECT sender_id FROM psychology_messages WHERE (sender_id = u.id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = u.id) ORDER BY created_at DESC LIMIT 1) as last_msg_sender_id
         FROM users u
         JOIN (
             SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END as user_id, 
@@ -59,7 +63,7 @@ if ($endpoint === '/api/teacher/get_conversations') {
         ) latest ON u.id = latest.user_id 
         ORDER BY latest.last_msg_time DESC
     ");
-    $stmt->execute([$my_id, $my_id, $my_id]);
+    $stmt->execute([$my_id, $my_id, $my_id, $my_id, $my_id, $my_id, $my_id, $my_id]);
     $convs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     foreach ($convs as &$c) {
@@ -309,8 +313,12 @@ if ($endpoint === '/api/chat/get') {
            OR (m1.sender_id = ? AND m1.receiver_id = ?) 
         ORDER BY m1.created_at ASC
     ");
-    $stmt->execute([$my_id, $pid, $pid, $my_id]);
+$stmt->execute([$my_id, $pid, $pid, $my_id]);
     $msgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // ĐÁNH DẤU ĐÃ ĐỌC (Tất cả tin nhắn người kia gửi cho mình)
+    $stmtRead = $pdo->prepare("UPDATE psychology_messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND (is_read = 0 OR is_read IS NULL)");
+    $stmtRead->execute([$pid, $my_id]);
     
     $is_anon_latest = 0;
     foreach ($msgs as &$m) {

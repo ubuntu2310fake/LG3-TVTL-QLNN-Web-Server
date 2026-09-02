@@ -221,7 +221,7 @@
     <script>
     const StudentChatApp = (function() {
         const myId = <?= $_SESSION['user']['id'] ?>;
-        let currentPartnerId = null;
+        let currentPartnerId = null; let currentPartnerIsTeacher = false;
         let chatInterval = null;
         let longPressTimer;
         let selectedMsgId = null;
@@ -234,7 +234,7 @@
             options.credentials = 'include';
             if (!options.headers && !(options.body instanceof FormData)) options.headers = { 'Content-Type': 'application/json' };
             try {
-                const res = await fetch(`consulting_chat.php?endpoint=${encodeURIComponent(endpoint)}`, options);
+                const res = await fetch(`consulting_chat.php?endpoint=${endpoint}`, options);
                 if (!res.ok) throw new Error((window.LANG && window.LANG.http_error || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'HTTP Lỗi:' : 'HTTP Error:') ?>") + ` ${res.status}`);
                 return await res.json();
             } catch(e) { 
@@ -502,7 +502,7 @@
                 currentPartnerIsTeacher = false;
                 if(chatInterval) clearInterval(chatInterval);
             },
-            sendMsg: async function() {
+sendMsg: async function() {
                 const inp = document.getElementById('tvtl-chat-inp');
                 const txt = inp.value.trim();
                 if(!txt || !currentPartnerId) return;
@@ -510,17 +510,6 @@
                 const isAnon = currentPartnerIsTeacher && document.getElementById('tvtl-anon-checkbox')?.checked;
                 
                 const box = document.getElementById('tvtl-chat-msgs');
-            if (msgs.length > 0) {
-                let isAnonNow = false;
-                for (let i = msgs.length - 1; i >= 0; i--) {
-                    if (msgs[i].is_anonymous == 1) { isAnonNow = true; break; }
-                }
-                const chk = document.getElementById('tvtl-anon-checkbox');
-                if (chk && chk.checked !== isAnonNow) {
-                    chk.checked = isAnonNow;
-                    StudentChatApp.toggleAnon(isAnonNow, false);
-                }
-            }
                 const anonTag = isAnon ? '<span style="font-size:10px; font-weight:bold; color:#8b5cf6; margin-bottom:2px; display:block;"><i class="fa-solid fa-user-secret"></i> Ẩn danh</span>' : '';
                 box.innerHTML += `<div class="msg-row msg-me"><div class="bubble" style="opacity:0.6">${anonTag}${txt.replace(/</g, "&lt;")}</div></div>`;
                 box.scrollTop = box.scrollHeight;

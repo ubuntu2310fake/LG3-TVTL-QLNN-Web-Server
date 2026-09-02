@@ -192,14 +192,27 @@ window.TeacherChatApp = (function() {
         let h = '';
         if(users && users.length > 0) {
             users.forEach(u => {
-                let active = (u.partner_id == partnerId) ? 'active' : '';
+let active = (u.partner_id == partnerId) ? 'active' : '';
                 let ava = u.avatar || 'static/default.png';
                 if (!ava.startsWith('http')) ava = pythonBase + ava;
+                
+                let isUnread = u.unread_count > 0;
+                let fw = isUnread ? '800' : 'normal';
+                let colorName = isUnread ? 'var(--text-main)' : 'var(--text-main)';
+                let colorMsg = isUnread ? 'var(--primary-color)' : 'var(--text-muted)';
+                let msgPrefix = u.last_msg_sender_id == <?= $_SESSION['user']['id'] ?> ? (window.LANG&&window.LANG.you_prefix || 'Bạn: ') : '';
+                let lastMsg = u.last_msg_content || (window.LANG&&window.LANG.click_to_chat || 'Bấm để trò chuyện');
+                if (lastMsg.length > 25) lastMsg = lastMsg.substring(0, 25) + '...';
+                lastMsg = lastMsg.replace(/</g, '&lt;');
+
                 h += `<div class="user-item ${active}" onclick="TeacherChatApp.openRoom(${u.partner_id}, '${u.partner_name}', '${ava}')">
-                        <img src="${ava}">
+                        <div style="position:relative;">
+                            <img src="${ava}">
+                            ${isUnread ? '<div style="position:absolute; bottom:2px; right:12px; width:12px; height:12px; background:var(--primary-color); border-radius:50%; border:2px solid var(--bg-card);"></div>' : ''}
+                        </div>
                         <div style="flex:1; overflow:hidden;">
-                            <b style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.partner_name}</b>
-                            <small style="opacity: 0.7;">${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Bấm để trò chuyện'" : "'Click to chat'") ?>}</small>
+                            <b style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${fw}; color:${colorName};">${u.partner_name}</b>
+                            <small style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${fw}; color:${colorMsg}; opacity: ${isUnread ? '1' : '0.7'};">${msgPrefix}${lastMsg}</small>
                         </div>
                       </div>`;
             });
@@ -207,12 +220,19 @@ window.TeacherChatApp = (function() {
         if(list.innerHTML !== h) list.innerHTML = h;
     }
 
-    async function loadMessages(forceScroll = false) {
+async function loadMessages(forceScroll = false) {
         if(!partnerId) return;
         const msgs = await reqPy('/api/chat/get', { partner_id: partnerId });
         const box = document.getElementById('db-msg-box');
-        let html = '';
         
+        // KHI HỌC SINH BẬT ẨN DANH VÀ XÓA LỊCH SỬ CHAT, ĐẨY GIÁO VIÊN RA NGOÀI MÀN HÌNH CHỜ
+        if (!msgs || msgs.length === 0) {
+            TeacherChatApp.closeRoom();
+            loadConversations();
+            return;
+        }
+
+        let html = '';
         if (msgs) {
             msgs.forEach(m => {
                 let isMe = (m.sender_id != partnerId);
