@@ -219,12 +219,23 @@ $updates = [
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
             'universal'   => 'LG3_TVTL_QLNN_Android.apk'
         ]
+    ],
+    '2.0.6_hf10' => [
+        'tag' => '2.0.6_hf10', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf10', "Bản cập nhật Hotfix 10:
+- Nâng cấp dịch vụ xác thực LG3 Shield Captcha & Cloudflare Turnstile
+- Tối ưu trải nghiệm đăng nhập bảo mật"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
     ]
     // Sếp có thể thêm bản mới vào đây
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.6_hf9';
+$latest_version = '2.0.6_hf10';
 $current_patch = isset($_GET['patch']) ? (int)$_GET['patch'] : 0;
 
 $hotfixes = [];
