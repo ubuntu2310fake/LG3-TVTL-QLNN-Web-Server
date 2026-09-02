@@ -12,7 +12,7 @@ $github_base_url = "https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/relea
 // 1. DANH SÁCH CHẶN (BẮT BUỘC CẬP NHẬT)
 // Những phiên bản trong mảng này sẽ bị khóa app, không cho ấn "Để sau"
 // ==========================================
-$blocked_versions = ['1.0.0', '1.0.1', '1.0.1_r1', '1.0.2', '1.0.3_r1', '1.0.2_r1', '1.0.4_r1', '1.0.5', '1.0.5_r1', '2.0.0','2.0.1','2.0.2','2.0.3','2.0.4','2.0.5','2.0.6','2.0.6_hf1','2.0.6_hf2','2.0.6_hf3','2.0.6_hf4']; // Ví dụ: '1.0.0', '1.0.1', ... (có thể thêm sau này)
+$blocked_versions = ['1.0.0', '1.0.1', '1.0.1_r1', '1.0.2', '1.0.3_r1', '1.0.2_r1', '1.0.4_r1', '1.0.5', '1.0.5_r1', '2.0.0','2.0.1','2.0.2','2.0.3','2.0.4','2.0.5','2.0.6','2.0.6_hf1','2.0.6_hf2','2.0.6_hf3','2.0.6_hf4','2.0.6_hf5','2.0.6_hf6']; // Ví dụ: '1.0.0', '1.0.1', ... (có thể thêm sau này)
 
 // Mảng cấu hình các phiên bản mới
 $updates = [
@@ -208,12 +208,23 @@ $updates = [
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
             'universal'   => 'LG3_TVTL_QLNN_Android.apk'
         ]
+    ],
+    '2.0.6_hf9' => [
+        'tag' => '2.0.6_hf9', // Tên tag trên GitHub
+        'note' => __('update_note_2_0_6_hf9', "Bản cập nhật Hotfix 9:
+- Tích hợp xử lý Cloudflare Captcha Challenge
+- Tối ưu chu kỳ tải thông báo và nén ảnh đại diện"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
     ]
     // Sếp có thể thêm bản mới vào đây
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.6_hf8';
+$latest_version = '2.0.6_hf9';
 $current_patch = isset($_GET['patch']) ? (int)$_GET['patch'] : 0;
 
 $hotfixes = [];

@@ -49,17 +49,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Đổi ảnh mới
         if (!empty($_FILES['image']['name'])) {
-            $target_dir = "../static/uploads/avatars/";
-            if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
-            $filename = uniqid() . "_" . time() . "_" . basename($_FILES["image"]["name"]);
-            $target_file = $target_dir . $filename;
-            
-            if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-                if ($student->image_url && file_exists("../" . $student->image_url)) unlink("../" . $student->image_url);
-                $image_url = "static/uploads/avatars/" . $filename;
-                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
-                $domain = $protocol . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost');
-                syncAvatarToPython($student->code, $domain . "/" . $image_url);
+            $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION)) ?: 'jpg';
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                $target_dir = "../static/uploads/avatars/";
+                if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+                $filename = "s{$id}_" . time() . ".jpg";
+                $target_file = $target_dir . $filename;
+                
+                $saved = false;
+                if (function_exists('imagecreatefromstring')) {
+                    $rawImgData = @file_get_contents($_FILES['image']['tmp_name']);
+                    if ($rawImgData !== false) {
+                        $srcImg = @imagecreatefromstring($rawImgData);
+                        if ($srcImg !== false) {
+                            $saved = imagejpeg($srcImg, $target_file, 90);
+                            imagedestroy($srcImg);
+                        }
+                    }
+                }
+                if (!$saved) {
+                    $saved = move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
+                }
+                
+                if ($saved) {
+                    if ($student->image_url && file_exists("../" . $student->image_url)) unlink("../" . $student->image_url);
+                    $image_url = "static/uploads/avatars/" . $filename;
+                    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+                    $domain = $protocol . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+                    syncAvatarToPython($student->code, $domain . "/" . $image_url);
+                }
             }
         }
 

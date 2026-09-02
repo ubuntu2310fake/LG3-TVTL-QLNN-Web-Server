@@ -14,50 +14,6 @@ $currentSessId = session_id();
 session_write_close();
 
 // --- XỬ LÝ 1: UPLOAD ĐỔI AVATAR (MỚI) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
-    $file = $_FILES['avatar'];
-    
-    $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $newFileName = "u{$userId}_" . time() . "." . $ext;
-    
-    $targetDir = "../static/uploads/avatars/";
-    if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
-    $targetPath = $targetDir . $newFileName;
-
-    if (move_uploaded_file($file['tmp_name'], $targetPath) || copy($file['tmp_name'], $targetPath)) {
-        @unlink($file['tmp_name']);
-        $dbPath = "static/uploads/avatars/" . $newFileName;
-        
-        // 1. Cập nhật bảng users (cột avatar)
-        $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?")->execute([$dbPath, $userId]);
-        
-        // 2. Cập nhật bảng student nếu có
-        $stmtS = $pdo->prepare("SELECT id FROM student WHERE code = ?");
-        $stmtS->execute([$user['username']]);
-        if ($s = $stmtS->fetch()) {
-            $pdo->prepare("UPDATE student SET image_url = ? WHERE id = ?")->execute([$dbPath, $s['id']]);
-        }
-        
-        // 3. Đồng bộ sang Python AI (Đã đóng vì Python Flask đã tắt)
-        /*
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
-        $domain = $protocol . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost');
-        $fullUrl = $domain . "/" . $dbPath;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['username' => $user['username'], 'avatar' => $fullUrl]));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Authorization: Bearer khoa_bi_mat_ket_noi_hai_app_123456_secure']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); curl_setopt($ch, CURLOPT_TIMEOUT, 2); curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_exec($ch); curl_close($ch);
-        */
-        
-        echo json_encode(['status'=>'success', 'msg'=>__('avatar_changed', 'Đã đổi Avatar!'), 'new_avatar_url' => $dbPath]);
-    } else {
-        echo json_encode(['status'=>'error', 'msg'=>__('avatar_upload_error', 'Lỗi upload ảnh lên server')]);
-    }
-    exit;
-}
-
 // --- XỬ LÝ 1.5: XÓA AVATAR VỀ MẶC ĐỊNH ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_avatar') {
     $stmt = $pdo->prepare("SELECT avatar FROM users WHERE id = ?");
@@ -370,34 +326,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (isset($_FILES['image']) || isset($_FILES['avatar'])) {
             $file = $_FILES['image'] ?? $_FILES['avatar'];
             if ($file['error'] === 0) {
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) ?: 'jpg';
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                     
                     $oldPath = $_SESSION['user']['avatar'] ?? $_SESSION['user']['image_url'] ?? '';
-                    if ($oldPath && file_exists($oldPath) && strpos($oldPath, 'default.png') === false) { @unlink($oldPath); }
+                    if ($oldPath && file_exists("../" . $oldPath) && strpos($oldPath, 'default.png') === false) { @unlink("../" . $oldPath); }
                     
                     $fileName = "u{$userId}_" . time() . ".jpg";
-                    $targetDir = 'static/uploads/avatars';
+                    $targetDir = '../static/uploads/avatars';
                     if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
                     
                     $newPath = "$targetDir/$fileName";
+                    $dbPath = "static/uploads/avatars/$fileName";
                     
-                    if (move_uploaded_file($file['tmp_name'], $newPath) || copy($file['tmp_name'], $newPath)) {
+                    $rawImgData = @file_get_contents($file['tmp_name']);
+                    if ($rawImgData === false) {
+                        echo json_encode(['status'=>'error', 'msg'=>__('cannot_read_image', 'Không thể đọc file ảnh!')]); 
+                        exit;
+                    }
+
+                    $srcImg = @imagecreatefromstring($rawImgData);
+                    if ($srcImg === false) {
+                        echo json_encode(['status'=>'error', 'msg'=>__('invalid_image_data', 'Nội dung file không phải là ảnh hợp lệ!')]); 
+                        exit;
+                    }
+
+                    $saved = imagejpeg($srcImg, $newPath, 90);
+                    imagedestroy($srcImg);
+
+                    if ($saved) {
                         @unlink($file['tmp_name']);
-                        $pdo->prepare("UPDATE users SET avatar=? WHERE id=?")->execute([$newPath, $userId]);
-                        if ($student) { $pdo->prepare("UPDATE student SET image_url=? WHERE id=?")->execute([$newPath, $student['id']]); }
+                        $pdo->prepare("UPDATE users SET avatar=? WHERE id=?")->execute([$dbPath, $userId]);
+                        if ($student) { $pdo->prepare("UPDATE student SET image_url=? WHERE id=?")->execute([$dbPath, $student['id']]); }
                         
-                        $_SESSION['user']['avatar'] = $newPath;
-                        $_SESSION['user']['image_url'] = $newPath;
+                        $_SESSION['user']['avatar'] = $dbPath;
+                        $_SESSION['user']['image_url'] = $dbPath;
                         
                         if (function_exists('syncAvatarToPython')) {
                             $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
                             $domain = $protocol . "://" . ($_SERVER['HTTP_HOST'] ?? 'localhost');
-                            $fullUrl = $domain . "/" . $newPath;
+                            $fullUrl = $domain . "/" . $dbPath;
                             syncAvatarToPython($user['username'], $fullUrl);
                         }
 
-                        echo json_encode(['status'=>'success', 'msg'=>__('avatar_changed', 'Đã đổi ảnh đại diện!'), 'new_avatar_url'=>$newPath]); 
+                        echo json_encode(['status'=>'success', 'msg'=>__('avatar_changed', 'Đã đổi ảnh đại diện!'), 'new_avatar_url'=>$dbPath]); 
                         exit;
                     } else { 
                         echo json_encode(['status'=>'error', 'msg'=>__('cannot_save_image', 'Không thể lưu file ảnh!')]); 
