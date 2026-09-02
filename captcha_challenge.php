@@ -3,18 +3,32 @@
 session_start();
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
-$redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? '/login.php';
-// Đảm bảo redirect an toàn, chỉ trong nội bộ site
-if (!str_starts_with($redirect, '/')) {
+$redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? $_SERVER['REQUEST_URI'] ?? '/login.php';
+if (!str_starts_with($redirect, '/') || str_contains($redirect, 'captcha_challenge.php')) {
     $redirect = '/login.php';
 }
 
-// Xử lý xác thực Captcha
+// Nếu là API / AJAX request từ App thì trả về JSON mã 252
+$isApi = (!empty($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) ||
+         (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+
+if ($isApi && $action !== 'verify_captcha') {
+    http_response_code(252);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'status' => 252,
+        'shield' => 'LG3_SHIELD',
+        'msg' => 'Dính mã 252 LG3 Shield Rate Limit. Vui lòng giải Captcha!',
+        'captcha_url' => '/captcha_challenge.php?redirect=' . urlencode($redirect)
+    ]);
+    exit;
+}
+
+// Xử lý nộp kết quả Captcha
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'verify_captcha') {
     $userAnswer = trim($_POST['captcha_answer'] ?? '');
     $expectedAnswer = $_SESSION['lg3_captcha_answer'] ?? null;
     
-    // Hỗ trợ cả câu hỏi bảo mật lẫn checkbox xác thực
     $isValid = false;
     if (!empty($userAnswer) && $expectedAnswer !== null && (int)$userAnswer === (int)$expectedAnswer) {
         $isValid = true;
@@ -33,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'verify_captcha') {
         ]);
         $_SESSION['lg3_shield_pass'] = $token;
         
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        if ($isApi) {
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 'success', 'redirect' => $redirect]);
             exit;
         }
@@ -45,6 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'verify_captcha') {
     }
 }
 
+// Luôn đặt HTTP status code là 252 khi hiển thị trang Captcha do dính Shield
+http_response_code(252);
+
 // Sinh câu đố toán học đơn giản
 $num1 = rand(1, 9);
 $num2 = rand(1, 9);
@@ -55,18 +73,19 @@ $_SESSION['lg3_captcha_answer'] = $num1 + $num2;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác thực bảo vệ - LG3 Shield</title>
+    <title>Xác thực bảo vệ [HTTP 252] - LG3 Shield</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background: #0b1120; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: #f8fafc; }
         .card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; width: 100%; max-width: 440px; padding: 32px 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center; }
-        .icon-box { width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg, #0284c7, #0369a1); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 28px; color: #ffffff; box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.4); }
+        .badge-252 { display: inline-block; background: rgba(2, 132, 199, 0.2); color: #38bdf8; border: 1px solid #0284c7; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-bottom: 12px; letter-spacing: 1px; }
+        .icon-box { width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg, #0284c7, #0369a1); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; font-size: 28px; color: #ffffff; box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.4); }
         h1 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #ffffff; }
         p { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 24px; }
         .puzzle-box { background: #0f172a; border: 1px dashed #38bdf8; border-radius: 14px; padding: 18px; margin-bottom: 20px; }
-        .puzzle-text { font-size: 18px; font-weight: 800; color: #38bdf8; letter-spacing: 2px; }
+        .puzzle-text { font-size: 22px; font-weight: 800; color: #38bdf8; letter-spacing: 2px; }
         .inp-code { width: 100%; background: #0f172a; border: 1.5px solid #334155; border-radius: 12px; padding: 12px; font-size: 18px; color: #ffffff; text-align: center; font-weight: 700; outline: none; margin-bottom: 16px; transition: all 0.2s; }
         .inp-code:focus { border-color: #0284c7; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2); }
         .btn-verify { width: 100%; background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s, opacity 0.2s; }
@@ -78,11 +97,12 @@ $_SESSION['lg3_captcha_answer'] = $num1 + $num2;
 </head>
 <body>
     <div class="card">
+        <div class="badge-252">🛡️ HTTP 252 • LG3 SHIELD RATE LIMIT</div>
         <div class="icon-box">
             <i class="fas fa-shield-halved"></i>
         </div>
         <h1>Xác thực bảo vệ LG3</h1>
-        <p>Hệ thống phát hiện lưu lượng truy cập tăng đột biến. Vui lòng giải phép tính đơn giản để tiếp tục:</p>
+        <p>Hệ thống phát hiện lưu lượng truy cập tăng nhanh bất thường. Vui lòng giải phép tính dưới đây để tiếp tục:</p>
 
         <?php if (!empty($error)): ?>
             <div class="error"><i class="fas fa-circle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
@@ -98,7 +118,7 @@ $_SESSION['lg3_captcha_answer'] = $num1 + $num2;
             <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
             
             <button type="submit" class="btn-verify">
-                <i class="fas fa-check-circle"></i> Xác nhận & Tiếp tục
+                <i class="fas fa-check-circle"></i> Xác nhận & Tiếp tục tải trang
             </button>
         </form>
 
