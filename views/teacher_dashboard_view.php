@@ -293,7 +293,7 @@ require_once 'includes/header.php';
 
     window.updateExemption = function(sid) {
         fetch('teacher_dashboard.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action: 'update_exemption', student_id: sid, is_exempt: document.getElementById('chk_'+sid).checked, reason: document.getElementById('rs_'+sid).value }) })
-        .then(r=>r.json()).then(d=>{ if(d.status==='success') { if(typeof Toastify !== 'undefined') Toastify({text: '<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã lưu!' : 'Saved!') ?>')), style:{background:"green"}}).showToast(); else alert'<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã lưu!' : 'Saved!') ?>')); } else alert(d.msg); });
+        .then(r=>r.json()).then(d=>{ if(d.status==='success') { if(typeof Toastify !== 'undefined') Toastify({text: '<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã lưu!' : 'Saved!') ?>', style:{background:"green"}}).showToast(); else alert('<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã lưu!' : 'Saved!') ?>'); } else alert(d.msg); });
     };
 
     window.resetStudentPassword = function(sid, sname) {
@@ -334,14 +334,18 @@ require_once 'includes/header.php';
     };
 
     window.deleteViolation = function(id) {
-        WinUI.confirm('<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xác nhận xóa' : 'Confirm delete') ?>')), '<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn muốn xóa vi phạm này của học sinh?' : 'Do you want to delete this violation of the student?') ?>')), function() {
+        const confirmDelete = function() {
             const fd = new FormData(); 
             fd.append('action', 'delete_violation'); 
             fd.append('id', id);
             
             fetch('teacher_dashboard.php', { method:'POST', body: fd }).then(r=>r.json()).then(d=>{ 
                 if(d.status==='success') { 
-                    Toastify({text: '<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã xóa!' : 'Deleted!') ?>')), style:{background:"#10b981"}}).showToast(); 
+                    if (typeof Toastify !== 'undefined') {
+                        Toastify({text: '<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã xóa!' : 'Deleted!') ?>', style:{background:"#10b981"}}).showToast(); 
+                    } else {
+                        alert('<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã xóa!' : 'Deleted!') ?>');
+                    }
                     // Xóa card vi phạm trong danh sách
                     const el = document.getElementById('vio_'+id);
                     if(el) {
@@ -353,7 +357,15 @@ require_once 'includes/header.php';
                 alert('Lỗi kết nối máy chủ!');
                 console.error(e);
             });
-        });
+        };
+
+        if (window.WinUI && window.WinUI.confirm) {
+            window.WinUI.confirm('<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xác nhận xóa' : 'Confirm delete') ?>', '<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn muốn xóa vi phạm này của học sinh?' : 'Do you want to delete this violation of the student?') ?>', confirmDelete);
+        } else {
+            if (confirm('<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn muốn xóa vi phạm này của học sinh?' : 'Do you want to delete this violation of the student?') ?>')) {
+                confirmDelete();
+            }
+        }
     };
 
     window.submitTeacherForm = function(e) {

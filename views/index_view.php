@@ -138,10 +138,10 @@ include 'includes/header.php';
 
         <div id="section-install-android" class="state-section">
             <p style="font-size: 13px; color: var(--text-main); margin-bottom: 12px; font-weight: 600;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chọn phiên bản phù hợp với máy của bạn:' : 'Choose the version suitable for your device:') ?></p>
-            <a href="https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/releases/download/1.0.5_r1/LG3_TVTL_QLNN_Android_arm64-v8a.apk" class="action-btn btn-apk" style="margin-bottom: 8px;">
+            <a href="https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/releases/download/2.0.6_hf12/LG3_TVTL_QLNN_Android_arm64-v8a.apk" class="action-btn btn-apk" style="margin-bottom: 8px;">
                 <i class="fab fa-android fa-lg" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Máy Android đời mới (Khuyên dùng)' : 'Modern Android device (Recommended)') ?>
             </a>
-            <a href="https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/releases/download/1.0.5_r1/LG3_TVTL_QLNN_Android_armeabi-v7a.apk" class="action-btn" style="background: #64748b; color: white; margin-bottom: 15px;">
+            <a href="https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/releases/download/2.0.6_hf12/LG3_TVTL_QLNN_Android_armeabi-v7a.apk" class="action-btn" style="background: #64748b; color: white; margin-bottom: 15px;">
                 <i class="fas fa-mobile-alt fa-lg" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Máy Android đời cũ (32-bit)' : 'Old Android device (32-bit)') ?>
             </a>
             <div class="download-stats"><i class="fas fa-fire" style="color: #ef4444;" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã có' : 'Has') ?> <b class="apk-download-count">...</b> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'lượt tải' : 'downloads') ?></div>
@@ -158,7 +158,7 @@ include 'includes/header.php';
                 <i class="fas fa-rocket" aria-hidden="true"></i> <b><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn muốn trải nghiệm tốt hơn?' : 'Want a better experience?') ?></b><br>
                 <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hệ thống LG3 nay đã có ứng dụng gốc cho Android, tải nhanh và mượt mà hơn bản Web hiện tại.' : 'The LG3 system now has a native Android app, faster and smoother than the web version.') ?>
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
-                    <a href="https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/releases/download/1.0.4_r1/LG3_TVTL_QLNN_Android_arm64-v8a.apk" style="justify-content: center;"><i class="fas fa-download" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tải cho máy đời mới' : 'Download for modern device') ?></a>
+                    <a href="https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/releases/download/2.0.6_hf12/LG3_TVTL_QLNN_Android_arm64-v8a.apk" style="justify-content: center;"><i class="fas fa-download" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tải cho máy đời mới' : 'Download for modern device') ?></a>
                 </div>
             </div>
         </div>

@@ -168,9 +168,11 @@ if ($query_theme === 'dark') {
 } elseif ($query_theme === 'light') {
     $data_theme_attr = '';
 }
+$is_mobile_ua = (bool)preg_match('/(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile)/i', $_SERVER['HTTP_USER_AGENT'] ?? '');
+$device_attr = $is_mobile_ua ? 'data-device="mobile"' : '';
 ?>
 <!DOCTYPE html>
-<html lang="vi" <?= $data_theme_attr ?>>
+<html lang="vi" <?= $data_theme_attr ?> <?= $device_attr ?>>
 <head>
     <meta property="og:type" content="website">
     <meta property="og:url" content="<?= (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') ?>/">
@@ -185,7 +187,7 @@ if ($query_theme === 'dark') {
     <meta name="application-name" content="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'LG3 - Siêu ứng dụng trường THPT Lạng Giang số 3' : 'LG3 Super App') ?>">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     
     <title><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'LG3 - Siêu ứng dụng trường THPT Lạng Giang số 3' : 'LG3 Super App') ?></title>
     
@@ -572,6 +574,7 @@ if ($query_theme === 'dark') {
         if (!window.currentLangCode) {
             window.currentLangCode = '<?= $_SESSION['lang'] ?? 'vi' ?>';
         }
+        window.currentUsername = <?= json_encode($_SESSION['user']['username'] ?? '') ?>;
         window.toggleLanguage = function() {
             const currentLang = window.currentLangCode;
             const newLang = currentLang === 'vi' ? 'en' : 'vi';

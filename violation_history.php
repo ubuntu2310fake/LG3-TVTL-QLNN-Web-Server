@@ -144,6 +144,7 @@ try {
             vr.date_created, 
             vr.week_number, 
             vr.note,
+            vr.evidence_img,
             vr.is_deleted, 
             s.name AS student_name, 
             s.code AS student_code,

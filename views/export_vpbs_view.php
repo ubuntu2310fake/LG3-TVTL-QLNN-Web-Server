@@ -110,10 +110,11 @@ include 'includes/header.php';
                 <thead>
                     <tr style="background: var(--bg-hover, #f1f5f9); border-bottom: 2px solid var(--border-color, #cbd5e1);">
                         <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'STT' : '#') ?></th>
-                        <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thời gian' : 'Time') ?></th>
-                        <th style="padding:12px 10px; text-align:left;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ tên' : 'Full Name') ?></th>
+                        <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Giờ VP' : 'Time') ?></th>
+                        <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày VP' : 'Date') ?></th>
+                        <th style="padding:12px 10px; text-align:left;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ và tên' : 'Full Name') ?></th>
                         <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lớp' : 'Class') ?></th>
-                        <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Điểm' : 'Score') ?></th>
+                        <th style="padding:12px 10px; text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Điểm trừ' : 'Penalty') ?></th>
                         <th style="padding:12px 10px; text-align:left;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chi tiết lỗi' : 'Error Details') ?></th>
                         <th style="padding:12px 10px; text-align:left;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ghi chú' : 'Note') ?></th>
                     </tr>
@@ -124,9 +125,10 @@ include 'includes/header.php';
                     foreach ($preview_data as $row): 
                         $d = new DateTime($row['date_created']);
                         
-                        $h_str = $d->format('H');
-                        $m = $d->format('i');
-                        $dateStr = "$h_str:$m " . $d->format('d/m');
+                        $h_int = (int)$d->format('H');
+                        $session = $h_int < 12 ? 'S' : 'C';
+                        $timeStr = $d->format('H:i') . $session;
+                        $dateStr = $d->format('j/n');
                         
                         $details = [];
                         if(!empty($row['details']) && is_array($row['details'])) {
@@ -137,6 +139,7 @@ include 'includes/header.php';
                     ?>
                     <tr style="border-bottom: 1px solid var(--border-color, #e2e8f0);">
                         <td style="padding:12px 10px; text-align:center;"><?= $i++ ?></td>
+                        <td style="padding:12px 10px; text-align:center; color:var(--text-muted, #64748b); font-weight:600;"><?= $timeStr ?></td>
                         <td style="padding:12px 10px; text-align:center; color:var(--text-muted, #64748b);"><?= $dateStr ?></td>
                         <td style="padding:12px 10px; font-weight:600; color:var(--text-main, #1e293b);"><?= htmlspecialchars($row['student_name'] ?? '') ?></td>
                         <td style="padding:12px 10px; text-align:center; color:var(--primary-color, #3b82f6); font-weight:bold;"><?= htmlspecialchars($row['class_name'] ?? '') ?></td>

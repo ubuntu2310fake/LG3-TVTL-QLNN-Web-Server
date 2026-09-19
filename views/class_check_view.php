@@ -244,7 +244,19 @@ $colspan = count($baseScores) + 2;
 
 <script>
     window.pageDestroy = function() {
-        document.onclick = null; window.cc_currentClassId = null;
+        document.onclick = null;
+        window.cc_currentClassId = null;
+        if (window.keypadEl) {
+            window.keypadEl.classList.remove('active');
+            window.keypadEl = null;
+        }
+        if (window.activeInput) {
+            window.activeInput.classList.remove('pseudo-focus');
+            window.activeInput = null;
+        }
+        document.querySelectorAll('.score-input.pseudo-focus').forEach(el => el.classList.remove('pseudo-focus'));
+        if (window.chatBtn) window.chatBtn.style.display = '';
+        window.isKeypadEventsAttached = false;
     };
 
     window.pageInit = function() {
@@ -258,21 +270,34 @@ $colspan = count($baseScores) + 2;
         window.DAYS = [{val: 7, label: "7"}, {val: 2, label: "2"}, {val: 3, label: "3"}, {val: 4, label: "4"}, {val: 5, label: "5"}, {val: 6, label: "6"}];
         document.onclick = function(e) { window.handleOutsideClick(e); window.closeAllSelects(null); };
 
-        if (!window.isKeypadEventsAttached) {
-            const keypadEl = document.getElementById('customKeypad');
-            if(keypadEl) {
-                const keys = keypadEl.querySelectorAll('.key-btn');
-                keys.forEach(btn => {
-                    const handleInput = (e) => { e.preventDefault(); e.stopPropagation(); window.kpPress(btn.getAttribute('data-key')); };
-                    const pressEffect = () => btn.classList.add('pressed');
-                    const releaseEffect = () => btn.classList.remove('pressed');
-                    btn.addEventListener('touchstart', (e) => { pressEffect(); handleInput(e); });
-                    btn.addEventListener('touchend', releaseEffect); btn.addEventListener('touchcancel', releaseEffect);
-                    btn.addEventListener('mousedown', (e) => { pressEffect(); handleInput(e); });
-                    btn.addEventListener('mouseup', releaseEffect); btn.addEventListener('mouseleave', releaseEffect);
-                });
-            }
-            window.isKeypadEventsAttached = true;
+        const keypadEl = document.getElementById('customKeypad');
+        if (keypadEl) {
+            window.keypadEl = keypadEl;
+            let lastPressTime = 0;
+            let lastTouchTime = 0;
+            const keys = keypadEl.querySelectorAll('.key-btn');
+            keys.forEach(btn => {
+                if (btn._kpBound) return;
+                btn._kpBound = true;
+                const handleInput = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const now = Date.now();
+                    if (e.type === 'mousedown' && now - lastTouchTime < 500) return;
+                    if (now - lastPressTime < 80) return;
+                    lastPressTime = now;
+                    if (e.type === 'touchstart') lastTouchTime = now;
+                    window.kpPress(btn.getAttribute('data-key'));
+                };
+                const pressEffect = () => btn.classList.add('pressed');
+                const releaseEffect = () => btn.classList.remove('pressed');
+                btn.addEventListener('touchstart', (e) => { pressEffect(); handleInput(e); }, { passive: false });
+                btn.addEventListener('touchend', releaseEffect);
+                btn.addEventListener('touchcancel', releaseEffect);
+                btn.addEventListener('mousedown', (e) => { pressEffect(); handleInput(e); });
+                btn.addEventListener('mouseup', releaseEffect);
+                btn.addEventListener('mouseleave', releaseEffect);
+            });
         }
     };
 
@@ -280,6 +305,9 @@ $colspan = count($baseScores) + 2;
     window.closeAllSelects = function(except) { document.querySelectorAll('.select-items').forEach(i => { if(i!==except?.nextElementSibling) i.style.display='none'; }); document.querySelectorAll('.select-selected').forEach(e => { if(e!==except) e.classList.remove('active'); }); };
     
     window.selectClass = function(id, name, el) {
+        if (window.keypadEl) window.keypadEl.classList.remove('active');
+        if (window.activeInput) { window.activeInput.classList.remove('pseudo-focus'); window.activeInput = null; }
+        if (window.chatBtn) window.chatBtn.style.display = '';
         document.getElementById('txtSelectedClass').innerText = name; window.cc_currentClassId = id;
         el.parentElement.style.display = 'none'; document.getElementById('paperForm').style.display = 'block'; window.loadClassData();
     };
@@ -403,6 +431,9 @@ $colspan = count($baseScores) + 2;
 
     window.submitAllData = function() {
         if(!window.cc_currentClassId) return alert(<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Chưa chọn lớp!'" : "'No class selected!'") ?>);
+        if (window.keypadEl) window.keypadEl.classList.remove('active');
+        if (window.activeInput) { window.activeInput.classList.remove('pseudo-focus'); window.activeInput = null; }
+        if (window.chatBtn) window.chatBtn.style.display = '';
         const btn = document.querySelector('.btn-save'); const old = btn.innerHTML; btn.innerHTML = '<i aria-hidden="true" class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
         const scores = [];
         document.querySelectorAll('tbody tr').forEach(tr => { tr.querySelectorAll('.score-input').forEach(i => { const deduc = parseFloat(i.dataset.max) - parseFloat(i.value || 0); scores.push({ day: tr.dataset.day, code: i.dataset.code, deduction: deduc }); }); });
@@ -418,26 +449,25 @@ $colspan = count($baseScores) + 2;
             inp.readOnly = true; 
             inp.onclick = function(e) {
                 e.preventDefault(); e.stopPropagation(); document.querySelectorAll('.score-input.pseudo-focus').forEach(el => el.classList.remove('pseudo-focus'));
-                window.activeInput = this; this.classList.add('pseudo-focus'); window.keypadEl.classList.add('active'); if(window.chatBtn) window.chatBtn.style.display = 'none'; window.resetOnNextInput = true;
+                window.activeInput = this; this.classList.add('pseudo-focus'); if(window.keypadEl) window.keypadEl.classList.add('active'); if(window.chatBtn) window.chatBtn.style.display = 'none'; window.resetOnNextInput = true;
                 setTimeout(() => { this.scrollIntoView({behavior: "smooth", block: "center"}); }, 100);
             };
         });
     };
 
     window.handleOutsideClick = function(e) {
-        if (window.keypadEl && !window.keypadEl.contains(e.target) && !e.target.classList.contains('score-input')) {
+        if (window.keypadEl && !window.keypadEl.contains(e.target) && !e.target.closest('.score-input')) {
             window.keypadEl.classList.remove('active'); if(window.chatBtn) window.chatBtn.style.display = ''; if(window.activeInput) { window.activeInput.classList.remove('pseudo-focus'); window.activeInput = null; }
         }
     };
 
     window.kpPress = function(key) {
         if (!window.activeInput) return;
-        if (key === 'ENTER') { window.keypadEl.classList.remove('active'); window.activeInput.classList.remove('pseudo-focus'); if(window.chatBtn) window.chatBtn.style.display = ''; window.activeInput = null; return; }
+        if (key === 'ENTER') { if (window.keypadEl) window.keypadEl.classList.remove('active'); if (window.activeInput) window.activeInput.classList.remove('pseudo-focus'); if(window.chatBtn) window.chatBtn.style.display = ''; window.activeInput = null; return; }
         let currentVal = window.activeInput.value.toString();
         if (window.resetOnNextInput) { if (key === 'DEL') window.activeInput.value = ''; else if (key === '.') window.activeInput.value = '0.'; else window.activeInput.value = key; window.resetOnNextInput = false; } 
         else { if (key === 'DEL') window.activeInput.value = currentVal.slice(0, -1); else if (key === '.') { if (!currentVal.includes('.')) window.activeInput.value = currentVal + '.'; } else { if (currentVal === '0' && key !== '.') window.activeInput.value = key; else window.activeInput.value = currentVal + key; } }
         window.validateAndCalc(window.activeInput);
-        window.activeInput.focus();
     };
 </script>
 <?php include 'includes/footer.php'; ?>

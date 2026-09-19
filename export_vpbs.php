@@ -103,11 +103,12 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] === 'export') {
             $spreadsheet = $reader->load($template_path);
             $sheet = $spreadsheet->getActiveSheet();
 
-            $sheet->setCellValue('A1', __('violation_list_week', "DANH SÁCH VI PHẠM TUẦN ") . $selected_week);
+            $sheet->setCellValue('A1', "DANH SÁCH HỌC SINH VI PHẠM NỘI QUY NHÀ TRƯỜNG TUẦN " . $selected_week);
+            $sheet->setCellValue('P1', "TỔNG HỢP ĐIỂM TRỪ BỔ SUNG CỦA ĐOÀN TRƯỜNG TUẦN " . $selected_week);
 
             $col_map = [
-                'DIMUON' => 'G', 'KSOVIN' => 'H', 'DEPLE' => 'I', 
-                'KTHE' => 'J', 'DTM' => 'K', 'KDP' => 'L', 'MBH' => 'M'
+                'DIMUON' => 'F', 'KSOVIN' => 'G', 'DEPLE' => 'H', 
+                'KTHE' => 'I', 'DTM' => 'J', 'KDP' => 'K', 'MBH' => 'L'
             ];
 
             $row = 4;
@@ -116,20 +117,19 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] === 'export') {
             foreach ($data as $item) {
                 $dateObj = new DateTime($item['date_created']);
                 
-                // Fix hiển thị giờ: 07:05
+                // Giờ VP: 07:05S hoặc 13:30C
                 $h_int = (int)$dateObj->format('H');
-                $h_str = $dateObj->format('H'); 
-                $m = $dateObj->format('i');
                 $session = $h_int < 12 ? 'S' : 'C';
+                $timeStr = $dateObj->format('H:i') . $session;
                 
-                $timeStr = "$h_str:$m$session " . $dateObj->format('d'); // Bỏ tháng cho gọn nếu muốn
+                // Ngày VP: thẳng ngày d/m (VD: 13/9)
+                $dateStr = $dateObj->format('j/n');
 
                 $sheet->setCellValue('A' . $row, $idx++);
                 $sheet->setCellValue('B' . $row, $timeStr);
-                $sheet->setCellValue('C' . $row, $dateObj->format('m'));
-                $sheet->setCellValue('D' . $row, $dateObj->format('Y'));
-                $sheet->setCellValue('E' . $row, $item['student_name']);
-                $sheet->setCellValue('F' . $row, $item['class_name']);
+                $sheet->setCellValue('C' . $row, $dateStr);
+                $sheet->setCellValue('D' . $row, $item['student_name']);
+                $sheet->setCellValue('E' . $row, $item['class_name']);
 
                 $other_points = 0;
                 foreach ($item['details'] as $code => $pts) {
@@ -143,23 +143,24 @@ if (isset($_REQUEST['action']) && $_REQUEST['action'] === 'export') {
                 }
                 
                 if ($other_points > 0) {
-                    $curr = $sheet->getCell('N' . $row)->getValue();
-                    $sheet->setCellValue('N' . $row, (float)$curr + $other_points);
+                    $curr = $sheet->getCell('M' . $row)->getValue();
+                    $sheet->setCellValue('M' . $row, (float)$curr + $other_points);
                 }
 
-                $sheet->setCellValue('O' . $row, $item['total']);
-                $sheet->setCellValue('P' . $row, implode(", ", array_unique($item['notes'])));
+                $sheet->setCellValue('N' . $row, $item['total']);
+                $sheet->setCellValue('O' . $row, implode(", ", array_unique($item['notes'])));
 
                 // Style
                 $styleArray = [
                     'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
                     'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER],
                 ];
-                $sheet->getStyle('A' . $row . ':P' . $row)->applyFromArray($styleArray);
-                $sheet->getStyle('A'.$row.':D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('G'.$row.':O'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('E'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                $sheet->getStyle('P'.$row)->getAlignment()->setWrapText(true);
+                $sheet->getStyle('A' . $row . ':O' . $row)->applyFromArray($styleArray);
+                $sheet->getStyle('A'.$row.':C'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle('E'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('F'.$row.':N'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('O'.$row)->getAlignment()->setWrapText(true);
 
                 $row++;
             }

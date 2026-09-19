@@ -203,8 +203,20 @@ include 'includes/header.php';
         <label style="font-weight:bold; font-size:13px; color:var(--text-muted); display:block;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ và Tên:' : 'Họ và Tên:') ?></label>
         <input type="text" name="name" value="<?= htmlspecialchars($student->name) ?>" class="win-input" required>
 
-        <label style="font-weight:bold; font-size:13px; color:var(--text-muted); display:block; margin-top:10px;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày sinh:' : 'Date of Birth:') ?></label>
-        <input type="text" name="dob" value="<?= htmlspecialchars($student->dob ?: '') ?>" class="win-input" placeholder="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'VD: 15/05/2008' : 'Ex: 15/05/2008') ?>">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
+            <div>
+                <label style="font-weight:bold; font-size:13px; color:var(--text-muted); display:block;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày sinh:' : 'Date of Birth:') ?></label>
+                <input type="text" name="dob" value="<?= htmlspecialchars($student->dob ?: '') ?>" class="win-input" placeholder="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'VD: 15/05/2008' : 'Ex: 15/05/2008') ?>">
+            </div>
+            <div>
+                <label style="font-weight:bold; font-size:13px; color:var(--text-muted); display:block;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Giới tính:' : 'Gender:') ?></label>
+                <select name="gender" class="win-input" style="height:42px;">
+                    <option value="" <?= empty($student->gender) ? 'selected' : '' ?>>-- <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chưa xác định' : 'Unspecified') ?> --</option>
+                    <option value="Nam" <?= ($student->gender ?? '') === 'Nam' ? 'selected' : '' ?>>Nam</option>
+                    <option value="Nữ" <?= ($student->gender ?? '') === 'Nữ' ? 'selected' : '' ?>>Nữ</option>
+                </select>
+            </div>
+        </div>
 
         <div style="display:flex; gap:10px; margin-top:25px;">
             <a href="manage_students" class="win-btn win-btn-secondary" style="text-decoration:none; padding:10px 20px;">

@@ -23,7 +23,14 @@ $currentUserId = $currentUser['id'] ?? 0;
             <h3 class="mode-title"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chế độ Người' : 'vs Player') ?></h3>
             <p class="mode-desc"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chơi với bạn bè' : 'Play with a Friend') ?></p>
         </div>
+
+        <div class="mode-card" onclick="showLeaderboard()">
+            <i class="fa-solid fa-trophy mode-icon rank" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"></i>
+            <h3 class="mode-title"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bảng Xếp Hạng' : 'Leaderboard') ?></h3>
+            <p class="mode-desc"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Kỳ thủ xuất sắc' : 'Top players') ?></p>
+        </div>
     </div>
+
 
     <!-- Game Area -->
     <div id="game-area" class="game-area">
@@ -57,6 +64,7 @@ $currentUserId = $currentUser['id'] ?? 0;
             </div>
         </div>
     </div>
+
 </div>
 
 <style>
@@ -421,7 +429,7 @@ function onMouseoutSquare(square, piece) {
     removeHighlights();
 }
 
-// ================= HUMAN MODE (Swal instead of Bootstrap Modal) =================
+// ================= HUMAN MODE  =================
 
 function showHumanMode() {
     if (!game) {
@@ -431,7 +439,7 @@ function showHumanMode() {
     
     window.currentHumanPopup = WinUI.popup(
         '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chơi với bạn bè' : 'Play with a Friend')) ?>',
-        '<div id="swal-player-list"><div style="padding: 20px; text-align: center; color: var(--text-muted);">Đang tải...</div></div>'
+        '<div id="winui-player-list"><div style="padding: 20px; text-align: center; color: var(--text-muted);">Đang tải...</div></div>'
     );
     
     fetch('api/chess_api.php?action=get_players')
@@ -453,71 +461,76 @@ function showHumanMode() {
                                                 <span class="pl-dot ${dotClass}"></span>
                                             </div>
                                             <div class="pl-name">${p.full_name || p.username} ${badge}</div>
+                                        </div>
                                         <button class="btn-challenge" onclick="if(window.currentHumanPopup) window.currentHumanPopup.close(); sendChallenge(${p.id})"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thách đấu' : 'Challenge') ?></button>
                                     </li>
                                 `;
                             });
                         }
                         html += '</ul>';
-                        document.getElementById('swal-player-list').innerHTML = html;
+                        document.getElementById('winui-player-list').innerHTML = html;
                     } else {
-                        document.getElementById('swal-player-list').innerHTML = '<div style="color:var(--danger-color); padding: 20px;">Lỗi tải dữ liệu.</div>';
+                        document.getElementById('winui-player-list').innerHTML = '<div style="color:var(--danger-color); padding: 20px;">Lỗi tải dữ liệu.</div>';
                     }
                 })
                 .catch(() => {
-                    document.getElementById('swal-player-list').innerHTML = '<div style="color:var(--danger-color); padding: 20px;">Lỗi mạng.</div>';
+                    document.getElementById('winui-player-list').innerHTML = '<div style="color:var(--danger-color); padding: 20px;">Lỗi mạng.</div>';
                 });
 }
 
 function sendChallenge(targetId) {
-    Swal.fire({ title: 'Đang gửi lời mời...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+    let sendingPopup = WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đang gửi...' : 'Sending...')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vui lòng chờ...' : 'Please wait...')) ?>');
     fetch('api/chess_api.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'action=challenge&target_id=' + targetId
     }).then(res => res.json()).then(res => {
+        sendingPopup.close();
         if (res.status === 'success') {
             currentMatchId = res.match_id;
-            Swal.fire({
-                title: 'Đã gửi lời mời!',
-                text: 'Đang chờ đối thủ đồng ý...',
-                icon: 'info',
-                showCancelButton: true,
-                cancelButtonText: 'Hủy lời mời',
-                showConfirmButton: false,
-                allowOutsideClick: false
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.cancel) {
-                    fetch('api/chess_api.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: 'action=cancel_challenge&match_id=' + currentMatchId
-                    });
-                }
-            });
+            window.waitingChallengePopup = WinUI.popup(
+                '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đã gửi lời mời!' : 'Invite Sent!')) ?>',
+                `<div style="padding: 20px; text-align: center;">
+                    <?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đang chờ đối thủ đồng ý...' : 'Waiting for opponent to accept...')) ?>
+                    <br><br>
+                    <button class="winui-btn" onclick="cancelCurrentChallenge()"><?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hủy lời mời' : 'Cancel Invite')) ?></button>
+                </div>`
+            );
+            
             if (window.SSEManager) {
                 SSEManager.on('CHESS_ACCEPTED', handleAccepted);
                 SSEManager.on('CHESS_DECLINED', handleDeclined);
             }
         } else {
-            Swal.fire('Lỗi', res.msg, 'error');
+            WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi' : 'Error')) ?>', res.msg);
         }
     });
 }
 
+window.cancelCurrentChallenge = function() {
+    if (window.waitingChallengePopup) window.waitingChallengePopup.close();
+    if (currentMatchId) {
+        fetch('api/chess_api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'action=cancel_challenge&match_id=' + currentMatchId
+        });
+    }
+}
+
 function handleAccepted(data) {
     if (data.match_id == currentMatchId) {
-        Swal.close();
+        if (window.waitingChallengePopup) window.waitingChallengePopup.close();
         joinMatch(currentMatchId);
     }
 }
 
 function handleDeclined(data) {
     if (data.match_id == currentMatchId) {
-        Swal.fire('Bị từ chối', 'Đối thủ đã từ chối lời mời của bạn.', 'warning');
+        if (window.waitingChallengePopup) window.waitingChallengePopup.close();
+        WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bị từ chối' : 'Declined')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đối thủ đã từ chối lời mời của bạn.' : 'Your opponent declined the invite.')) ?>');
     }
 }
-
 function joinMatch(matchId) {
     fetch('api/chess_api.php?action=match_info&match_id=' + matchId)
         .then(res => res.json())
@@ -591,6 +604,16 @@ function startBotMode() {
             setupBotGame('medium');
         }
     });
+}
+
+
+window.reportBotResult = function(result) {
+    if (currentMode !== 'bot' || !botDifficulty) return;
+    const formData = new FormData();
+    formData.append('action', 'report_bot_match');
+    formData.append('difficulty', botDifficulty);
+    formData.append('result', result);
+    fetch('api/chess_api.php', { method: 'POST', body: formData }).catch(e => console.error(e));
 }
 
 function setupBotGame(difficulty) {
@@ -700,14 +723,17 @@ function updateStatus() {
         isMyTurn = false;
         if (game.turn() === myColor) {
             WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ván đấu kết thúc' : 'Game Over')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn đã thua!' : 'You lost!')) ?>');
+            if (currentMode === 'bot') reportBotResult('loss');
         } else {
             WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ván đấu kết thúc' : 'Game Over')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn đã thắng!' : 'You won!')) ?>');
+            if (currentMode === 'bot') reportBotResult('win');
         }
     }
     else if (game.in_draw()) {
         status = '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ván đấu kết thúc' : 'Game Over')) ?>, <?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thế cờ hòa' : 'Drawn position')) ?>';
         matchActive = false;
         isMyTurn = false;
+        if (currentMode === 'bot') reportBotResult('draw');
         WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ván đấu kết thúc' : 'Game Over')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hòa!' : 'Draw!')) ?>');
     }
     else {
@@ -811,6 +837,7 @@ function resignGame() {
             matchActive = false;
             isMyTurn = false;
             if (currentMode === 'bot') {
+                reportBotResult('loss');
                 WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ván đấu kết thúc' : 'Game Over')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn đã thua!' : 'You lost!')) ?>');
             } else {
                 fetch('api/chess_api.php', {
@@ -852,6 +879,106 @@ window.selectDifficulty = function(value, text, el) {
     document.getElementById('botDifficultySelector').value = value;
     window.closeAllSelects(null);
 };
+
+window.showLeaderboard = async function() {
+    let loadingPopup = WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đang tải...' : 'Loading...')) ?>', '<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vui lòng chờ...' : 'Please wait...')) ?>');
+    
+    try {
+        const res = await fetch('api/chess_api.php?action=get_leaderboard');
+        const data = await res.json();
+        loadingPopup.close();
+        
+        if (data.status === 'success') {
+            let pvp = data.pvp || [];
+            let pve = data.pve || [];
+            
+            let html = `
+            <style>
+            .lb-tabs { display:flex; margin-bottom:15px; border-bottom:1px solid var(--border-color); }
+            .lb-tab { flex:1; text-align:center; padding:10px; cursor:pointer; font-weight:600; color:var(--text-muted); transition:0.2s; }
+            .lb-tab.active { color:var(--primary-color); border-bottom:3px solid var(--primary-color); }
+            .lb-content { display:none; max-height:400px; overflow-y:auto; }
+            .lb-content.active { display:block; }
+            .lb-row { display:flex; align-items:center; padding:10px 5px; border-bottom:1px solid var(--border-color); }
+            .lb-row:last-child { border-bottom:none; }
+            .lb-rank { width:30px; font-weight:bold; font-size:16px; color:#888; text-align:center; }
+            .lb-row:nth-child(1) .lb-rank { color:#fbbf24; font-size:20px; }
+            .lb-row:nth-child(2) .lb-rank { color:#9ca3af; font-size:18px; }
+            .lb-row:nth-child(3) .lb-rank { color:#b45309; font-size:18px; }
+            .lb-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; margin:0 10px; border:1px solid var(--border-color); }
+            .lb-name { flex:1; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+            .lb-score { font-weight:bold; color:var(--primary-color); font-size:16px; text-align:right; }
+            .lb-stats { font-size:11px; color:var(--text-muted); display:block; }
+            <\/style>
+            
+            <div class="lb-tabs">
+                <div class="lb-tab active" onclick="document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.lb-content').forEach(c=>c.classList.remove('active')); document.getElementById('lb-pvp').classList.add('active');">
+                    PvP (Elo)
+                </div>
+                <div class="lb-tab" onclick="document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.lb-content').forEach(c=>c.classList.remove('active')); document.getElementById('lb-pve').classList.add('active');">
+                    PvE (Bot)
+                </div>
+            </div>
+            
+            <div id="lb-pvp" class="lb-content active">
+            `;
+            
+            if (pvp.length === 0) {
+                html += `<div style="text-align:center; padding:20px; color:var(--text-muted);">${window.LANG&&window.LANG.no_data||'Chưa có dữ liệu.'}</div>`;
+            } else {
+                pvp.forEach((u, i) => {
+                    let ava = u.avatar ? ('/' + u.avatar) : '/static/default.png';
+                    html += `
+                        <div class="lb-row">
+                            <div class="lb-rank">#${i+1}</div>
+                            <img src="${ava}" class="lb-avatar">
+                            <div class="lb-name">
+                                ${u.full_name || u.username}
+                                <span class="lb-stats">W: ${u.pvp_wins} | L: ${u.pvp_losses} | D: ${u.pvp_draws}</span>
+                            </div>
+                            <div class="lb-score">${u.pvp_elo}</div>
+                        </div>
+                    `;
+                });
+            }
+            html += `</div><div id="lb-pve" class="lb-content">`;
+            
+            if (pve.length === 0) {
+                html += `<div style="text-align:center; padding:20px; color:var(--text-muted);">${window.LANG&&window.LANG.no_data||'Chưa có dữ liệu.'}</div>`;
+            } else {
+                pve.forEach((u, i) => {
+                    let ava = u.avatar ? ('/' + u.avatar) : '/static/default.png';
+                    html += `
+                        <div class="lb-row">
+                            <div class="lb-rank">#${i+1}</div>
+                            <img src="${ava}" class="lb-avatar">
+                            <div class="lb-name">
+                                ${u.full_name || u.username}
+                                <span class="lb-stats">
+                                    <span style="color:#ef4444">Master: ${u.bot_master_wins}</span> | 
+                                    <span style="color:#f97316">Hard: ${u.bot_hard_wins}</span> | 
+                                    <span style="color:#eab308">Med: ${u.bot_medium_wins}</span> | 
+                                    <span style="color:#22c55e">Easy: ${u.bot_easy_wins}</span>
+                                </span>
+                            </div>
+                            <div class="lb-score">${u.total_bot_wins} Win</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            html += `</div>`;
+            
+            if (window.currentHumanPopup) window.currentHumanPopup.close(); // just in case
+            window.currentHumanPopup = WinUI.alert('<?= addslashes((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bảng Xếp Hạng Cờ Vua' : 'Chess Leaderboard')) ?>', html);
+        }
+    } catch(e) {
+        console.error(e);
+        loadingPopup.close();
+        WinUI.alert('Error', 'Could not load leaderboard.');
+    }
+}
 </script>
+
 
 <?php require_once 'includes/footer.php'; ?>

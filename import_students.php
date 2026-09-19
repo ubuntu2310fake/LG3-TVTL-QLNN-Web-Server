@@ -73,10 +73,11 @@ if (!$isIframe) {
                 <thead>
                     <tr>
                         <th><?= __('stt', 'STT') ?></th>
+                        <th><?= __('class', 'Lớp') ?></th>
                         <th><?= __('student_code_sbd', 'Mã HS / SBD') ?></th>
                         <th><?= __('full_name', 'Họ và Tên') ?></th>
-                        <th><?= __('class', 'Lớp') ?></th>
                         <th><?= __('dob', 'Ngày sinh') ?></th>
+                        <th><?= __('gender', 'Giới tính') ?></th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -131,10 +132,11 @@ if (!$isIframe) {
                     data.data.forEach((row, index) => {
                         html += `<tr>
                                     <td><b>${row.thuylinh !== null && row.thuylinh !== undefined ? row.thuylinh : (index + 1)}</b></td>
+                                    <td><span style="background: var(--bg-input); padding: 3px 8px; border-radius: 4px;">${row.class_name}</span></td>
                                     <td><b>${row.code}</b></td>
                                     <td>${row.name}</td>
-                                    <td><span style="background: var(--bg-input); padding: 3px 8px; border-radius: 4px;">${row.class_name}</span></td>
-                                    <td>${row.dob}</td>
+                                    <td>${row.dob || ''}</td>
+                                    <td>${row.gender || ''}</td>
                                  </tr>`;
                     });
                     document.getElementById('tableBody').innerHTML = html;

@@ -305,16 +305,36 @@ if ($endpoint === '/api/chat/get') {
         exit;
     }
     
-    $stmt = $pdo->prepare("
-        SELECT m1.*, m2.content as reply_content, m2.sender_id as reply_sender_id 
-        FROM psychology_messages m1
-        LEFT JOIN psychology_messages m2 ON m1.reply_id = m2.id
-        WHERE (m1.sender_id = ? AND m1.receiver_id = ?) 
-           OR (m1.sender_id = ? AND m1.receiver_id = ?) 
-        ORDER BY m1.created_at ASC
-    ");
-$stmt->execute([$my_id, $pid, $pid, $my_id]);
-    $msgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $limit = isset($inputData['limit']) ? max(1, min(100, (int)$inputData['limit'])) : 30;
+    $before_id = isset($inputData['before_id']) && (int)$inputData['before_id'] > 0 ? (int)$inputData['before_id'] : null;
+    $limInt = (int)$limit;
+
+    if ($before_id) {
+        $stmt = $pdo->prepare("
+            SELECT m1.*, m2.content as reply_content, m2.sender_id as reply_sender_id 
+            FROM psychology_messages m1
+            LEFT JOIN psychology_messages m2 ON m1.reply_id = m2.id
+            WHERE ((m1.sender_id = ? AND m1.receiver_id = ?) 
+               OR (m1.sender_id = ? AND m1.receiver_id = ?))
+              AND m1.id < ?
+            ORDER BY m1.id DESC
+            LIMIT $limInt
+        ");
+        $stmt->execute([$my_id, $pid, $pid, $my_id, (int)$before_id]);
+    } else {
+        $stmt = $pdo->prepare("
+            SELECT m1.*, m2.content as reply_content, m2.sender_id as reply_sender_id 
+            FROM psychology_messages m1
+            LEFT JOIN psychology_messages m2 ON m1.reply_id = m2.id
+            WHERE (m1.sender_id = ? AND m1.receiver_id = ?) 
+               OR (m1.sender_id = ? AND m1.receiver_id = ?) 
+            ORDER BY m1.id DESC
+            LIMIT $limInt
+        ");
+        $stmt->execute([$my_id, $pid, $pid, $my_id]);
+    }
+    $raw_msgs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $msgs = array_reverse($raw_msgs);
     
     // ĐÁNH DẤU ĐÃ ĐỌC (Tất cả tin nhắn người kia gửi cho mình)
     $stmtRead = $pdo->prepare("UPDATE psychology_messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND (is_read = 0 OR is_read IS NULL)");

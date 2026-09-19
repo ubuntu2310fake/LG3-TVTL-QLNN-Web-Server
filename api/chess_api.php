@@ -15,6 +15,46 @@ $currentUsername = $currentUser['username'] ?? '';
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+
+// Hàm tiện ích tính toán và cập nhật Elo
+function updateEloAndStats($pdo, $p1_id, $p2_id, $winner_id, $is_draw = false) {
+    // Đảm bảo cả 2 có trong chess_stats
+    $pdo->exec("INSERT IGNORE INTO chess_stats (user_id) VALUES ($p1_id), ($p2_id)");
+    
+    $stmt = $pdo->prepare("SELECT user_id, pvp_elo FROM chess_stats WHERE user_id IN (?, ?)");
+    $stmt->execute([$p1_id, $p2_id]);
+    $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $elos = [];
+    foreach($stats as $s) $elos[$s['user_id']] = $s['pvp_elo'];
+    
+    $elo1 = $elos[$p1_id] ?? 1200;
+    $elo2 = $elos[$p2_id] ?? 1200;
+    
+    $E1 = 1 / (1 + pow(10, ($elo2 - $elo1) / 400));
+    $E2 = 1 / (1 + pow(10, ($elo1 - $elo2) / 400));
+    
+    $S1 = $is_draw ? 0.5 : (($winner_id == $p1_id) ? 1 : 0);
+    $S2 = $is_draw ? 0.5 : (($winner_id == $p2_id) ? 1 : 0);
+    
+    $K = 32;
+    $new_elo1 = round($elo1 + $K * ($S1 - $E1));
+    $new_elo2 = round($elo2 + $K * ($S2 - $E2));
+    
+    // Cập nhật P1
+    $p1_win = ($winner_id == $p1_id && !$is_draw) ? 1 : 0;
+    $p1_loss = ($winner_id == $p2_id && !$is_draw) ? 1 : 0;
+    $p1_d = $is_draw ? 1 : 0;
+    $pdo->prepare("UPDATE chess_stats SET pvp_elo = ?, pvp_wins = pvp_wins + ?, pvp_losses = pvp_losses + ?, pvp_draws = pvp_draws + ? WHERE user_id = ?")
+        ->execute([$new_elo1, $p1_win, $p1_loss, $p1_d, $p1_id]);
+        
+    // Cập nhật P2
+    $p2_win = ($winner_id == $p2_id && !$is_draw) ? 1 : 0;
+    $p2_loss = ($winner_id == $p1_id && !$is_draw) ? 1 : 0;
+    $p2_d = $is_draw ? 1 : 0;
+    $pdo->prepare("UPDATE chess_stats SET pvp_elo = ?, pvp_wins = pvp_wins + ?, pvp_losses = pvp_losses + ?, pvp_draws = pvp_draws + ? WHERE user_id = ?")
+        ->execute([$new_elo2, $p2_win, $p2_loss, $p2_d, $p2_id]);
+}
+
 try {
     switch ($action) {
         case 'challenge':
@@ -166,8 +206,14 @@ try {
 
             $opponentId = ($match['player1_id'] == $currentUserId) ? $match['player2_id'] : $match['player1_id'];
             
+
             $updateStmt = $pdo->prepare("UPDATE chess_matches SET fen = ?, turn_user_id = ?, status = ?, winner_id = ? WHERE id = ?");
             $updateStmt->execute([$fen, $opponentId, $status, $winnerId ?: null, $matchId]);
+            
+            if ($status === 'FINISHED') {
+                updateEloAndStats($pdo, $match['player1_id'], $match['player2_id'], $winnerId, empty($winnerId));
+            }
+
 
             // Get opponent username
             $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
@@ -198,8 +244,12 @@ try {
             
             $opponentId = ($match['player1_id'] == $currentUserId) ? $match['player2_id'] : $match['player1_id'];
             
+
             $updateStmt = $pdo->prepare("UPDATE chess_matches SET status = 'FINISHED', winner_id = ? WHERE id = ?");
             $updateStmt->execute([$opponentId, $matchId]);
+            
+            updateEloAndStats($pdo, $match['player1_id'], $match['player2_id'], $opponentId, false);
+
 
             // Get opponent username
             $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
@@ -214,6 +264,58 @@ try {
             sse_push($pdo, 'CHESS_RESIGN', $payload, 'user:' . $oppUsername);
 
             echo json_encode(['status' => 'success']);
+            break;
+            
+
+        case 'report_bot_match':
+            $difficulty = $_POST['difficulty'] ?? 'medium';
+            $result = $_POST['result'] ?? ''; // win, loss, draw
+            
+            $valid_diffs = ['easy', 'medium', 'hard', 'master'];
+            if (!in_array($difficulty, $valid_diffs)) $difficulty = 'medium';
+            
+            $pdo->exec("INSERT IGNORE INTO chess_stats (user_id) VALUES ($currentUserId)");
+            
+            if ($result === 'win') {
+                $col = "bot_{$difficulty}_wins";
+                $pdo->exec("UPDATE chess_stats SET {$col} = {$col} + 1 WHERE user_id = $currentUserId");
+            } else if ($result === 'loss') {
+                $pdo->exec("UPDATE chess_stats SET bot_losses = bot_losses + 1 WHERE user_id = $currentUserId");
+            }
+            // For draws vs bots we might not care or add a column later, ignore for now
+            
+            echo json_encode(['status' => 'success']);
+            break;
+            
+
+        case 'get_leaderboard':
+// PvP Leaderboard
+            $stmt = $pdo->prepare("
+                SELECT u.username, u.full_name, u.avatar, cs.pvp_elo, cs.pvp_wins, cs.pvp_losses, cs.pvp_draws
+                FROM chess_stats cs
+                JOIN users u ON cs.user_id = u.id
+                WHERE (cs.pvp_wins + cs.pvp_losses + cs.pvp_draws) > 0
+                ORDER BY cs.pvp_elo DESC, cs.pvp_wins DESC
+                LIMIT 50
+            ");
+            $stmt->execute();
+            $pvp = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // PvE Leaderboard
+            $stmt = $pdo->prepare("
+                SELECT u.username, u.full_name, u.avatar, 
+                       cs.bot_easy_wins, cs.bot_medium_wins, cs.bot_hard_wins, cs.bot_master_wins, cs.bot_losses,
+                       (cs.bot_easy_wins + cs.bot_medium_wins + cs.bot_hard_wins + cs.bot_master_wins) as total_bot_wins
+                FROM chess_stats cs
+                JOIN users u ON cs.user_id = u.id
+                WHERE (cs.bot_easy_wins + cs.bot_medium_wins + cs.bot_hard_wins + cs.bot_master_wins) > 0
+                ORDER BY cs.bot_master_wins DESC, cs.bot_hard_wins DESC, cs.bot_medium_wins DESC, cs.bot_easy_wins DESC
+                LIMIT 50
+            ");
+            $stmt->execute();
+            $pve = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            echo json_encode(['status' => 'success', 'pvp' => $pvp, 'pve' => $pve]);
             break;
             
         case 'match_info':

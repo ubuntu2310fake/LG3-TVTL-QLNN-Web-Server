@@ -85,7 +85,7 @@ include 'includes/header.php';
         font-size: 24px; font-weight: 500; color: var(--text-main);
         cursor: pointer; user-select: none; transition: 0.1s;
     }
-    .key-btn:active { background-color: var(--bg-hover); transform: scale(0.92); }
+    .key-btn:active, .key-btn.pressed { background-color: var(--bg-hover); transform: scale(0.92); }
     .key-btn.action-del { background: var(--bg-hover); }
     .key-btn.action-enter { background: var(--accent-color); color: var(--bg-card); font-weight: 700; font-size: 18px; }
 </style>
@@ -209,12 +209,90 @@ include 'includes/header.php';
         } catch (e) { console.error(e); }
     };
     
-    setTimeout(window.loadOldData, 100);
+    window.handleOutsideClickAcademic = function(e) {
+        if (window.keypadEl && !window.keypadEl.contains(e.target) && !e.target.closest('.win-input-sm')) {
+            window.keypadEl.classList.remove('active'); 
+            if(window.chatBtn) window.chatBtn.style.display = ''; 
+            if(window.activeInput) {
+                window.activeInput.classList.remove('pseudo-focus');
+                window.activeInput = null;
+            }
+        }
+    };
 
-    var initAcademicForm = function() {
+    window.initCustomKeypad = function() {
+        if (!window.isMobile) return;
+        const inputs = document.querySelectorAll('.win-input-sm'); 
+        window.keypadEl = document.getElementById('customKeypad'); 
+        window.chatBtn = document.getElementById('chatBubbleBtn');
+        if(window.keypadEl) window.keypadEl.style.display = 'block';
+        inputs.forEach(inp => {
+            if (inp._kpBound) return;
+            inp._kpBound = true;
+            inp.readOnly = true; 
+            inp.onclick = function(e) {
+                e.preventDefault(); e.stopPropagation(); 
+                document.querySelectorAll('.win-input-sm.pseudo-focus').forEach(el => el.classList.remove('pseudo-focus'));
+                window.activeInput = this; 
+                this.classList.add('pseudo-focus'); 
+                if (window.keypadEl) window.keypadEl.classList.add('active'); 
+                if(window.chatBtn) window.chatBtn.style.display = 'none'; 
+                window.resetOnNextInput = true;
+                setTimeout(() => { this.scrollIntoView({behavior: "smooth", block: "center"}); }, 100);
+            };
+        });
+    };
+
+    window.kpPress = function(key) {
+        if (!window.activeInput) return;
+        if (key === 'ENTER') { 
+            if (window.keypadEl) window.keypadEl.classList.remove('active'); 
+            if (window.activeInput) window.activeInput.classList.remove('pseudo-focus'); 
+            if (window.chatBtn) window.chatBtn.style.display = ''; 
+            window.activeInput = null; 
+            return; 
+        }
+        let currentVal = window.activeInput.value.toString();
+        if (window.resetOnNextInput) { 
+            if (key === 'DEL') window.activeInput.value = ''; 
+            else if (key === '.') window.activeInput.value = '0.'; 
+            else window.activeInput.value = key; 
+            window.resetOnNextInput = false; 
+        } else { 
+            if (key === 'DEL') window.activeInput.value = currentVal.slice(0, -1); 
+            else if (key === '.') { 
+                if (!currentVal.includes('.')) window.activeInput.value = currentVal + '.'; 
+            } else { 
+                if (currentVal === '0' && key !== '.') window.activeInput.value = key; 
+                else window.activeInput.value = currentVal + key; 
+            } 
+        }
+        window.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    window.pageDestroy = function() {
+        document.removeEventListener('click', window.handleOutsideClickAcademic);
+        if (window.keypadEl) {
+            window.keypadEl.classList.remove('active');
+            window.keypadEl = null;
+        }
+        if (window.activeInput) {
+            window.activeInput.classList.remove('pseudo-focus');
+            window.activeInput = null;
+        }
+        document.querySelectorAll('.win-input-sm.pseudo-focus').forEach(el => el.classList.remove('pseudo-focus'));
+        if (window.chatBtn) window.chatBtn.style.display = '';
+    };
+
+    window.pageInit = function() {
+        window.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 992;
+        window.loadOldData();
+
         var viewWeek = document.getElementById('viewWeek');
         if(viewWeek) {
             viewWeek.onchange = function() {
+                if (window.keypadEl) window.keypadEl.classList.remove('active');
+                if (window.activeInput) { window.activeInput.classList.remove('pseudo-focus'); window.activeInput = null; }
                 if(typeof loadPage === 'function') loadPage(`input_academic.php?week=${this.value}`);
                 else window.location.href = `input_academic.php?week=${this.value}`;
             };
@@ -224,7 +302,10 @@ include 'includes/header.php';
         if(form) {
             form.onsubmit = function(e) {
                 e.preventDefault();
-                
+                if (window.keypadEl) window.keypadEl.classList.remove('active');
+                if (window.activeInput) { window.activeInput.classList.remove('pseudo-focus'); window.activeInput = null; }
+                if (window.chatBtn) window.chatBtn.style.display = '';
+
                 var sendFormData = new FormData();
                 sendFormData.append('week', document.getElementById('viewWeek').value);
                 
@@ -269,7 +350,6 @@ include 'includes/header.php';
                         if(typeof Toastify !== 'undefined') Toastify({text:"✅ " + data.msg, style:{background:"#10b981"}}).showToast();
                         else alert("✅ " + data.msg); 
                         
-                        // Cập nhật lại oldData để ngầm hiểu là đã lưu
                         classIds.forEach(function(input) {
                             var cid = input.value;
                             var scoreInput = document.querySelector(`input[name="score_${cid}"]`);
@@ -290,77 +370,40 @@ include 'includes/header.php';
             };
         }
 
-        window.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        window.initCustomKeypad = function() {
-            if (!window.isMobile) return;
-            const inputs = document.querySelectorAll('.win-input-sm'); 
-            window.keypadEl = document.getElementById('customKeypad'); 
-            window.chatBtn = document.getElementById('chatBubbleBtn');
-            if(window.keypadEl) window.keypadEl.style.display = 'block';
-            inputs.forEach(inp => {
-                inp.readOnly = true; 
-                inp.onclick = function(e) {
-                    e.preventDefault(); e.stopPropagation(); 
-                    document.querySelectorAll('.win-input-sm.pseudo-focus').forEach(el => el.classList.remove('pseudo-focus'));
-                    window.activeInput = this; 
-                    this.classList.add('pseudo-focus'); 
-                    window.keypadEl.classList.add('active'); 
-                    if(window.chatBtn) window.chatBtn.style.display = 'none'; 
-                    window.resetOnNextInput = true;
-                    setTimeout(() => { this.scrollIntoView({behavior: "smooth", block: "center"}); }, 100);
-                };
-            });
-        };
-
-        window.handleOutsideClick = function(e) {
-            if (window.keypadEl && !window.keypadEl.contains(e.target) && !e.target.classList.contains('win-input-sm')) {
-                window.keypadEl.classList.remove('active'); 
-                if(window.chatBtn) window.chatBtn.style.display = ''; 
-                if(window.activeInput) { window.activeInput.classList.remove('pseudo-focus'); window.activeInput = null; }
-            }
-        };
-
-        window.kpPress = function(key) {
-            if (!window.activeInput) return;
-            if (key === 'ENTER') { 
-                window.keypadEl.classList.remove('active'); 
-                window.activeInput.classList.remove('pseudo-focus'); 
-                if(window.chatBtn) window.chatBtn.style.display = ''; 
-                window.activeInput = null; 
-                return; 
-            }
-            let currentVal = window.activeInput.value.toString();
-            if (window.resetOnNextInput) { 
-                if (key === 'DEL') window.activeInput.value = ''; 
-                else if (key === '.') window.activeInput.value = '0.'; 
-                else window.activeInput.value = key; 
-                window.resetOnNextInput = false; 
-            } else { 
-                if (key === 'DEL') window.activeInput.value = currentVal.slice(0, -1); 
-                else if (key === '.') { 
-                    if (!currentVal.includes('.')) window.activeInput.value = currentVal + '.'; 
-                } else { 
-                    if (currentVal === '0' && key !== '.') window.activeInput.value = key; 
-                    else window.activeInput.value = currentVal + key; 
-                } 
-            }
-            window.activeInput.dispatchEvent(new Event('input', { bubbles: true }));
-            window.activeInput.focus();
-        };
-
         if(window.isMobile) window.initCustomKeypad();
         
         const keypad = document.getElementById('customKeypad');
         if (keypad) {
+            window.keypadEl = keypad;
+            let lastPressTime = 0;
+            let lastTouchTime = 0;
             keypad.querySelectorAll('.key-btn').forEach(btn => {
-                btn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); window.kpPress(this.dataset.key); };
+                if (btn._kpBound) return;
+                btn._kpBound = true;
+                const handleInput = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const now = Date.now();
+                    if (e.type === 'mousedown' && now - lastTouchTime < 500) return;
+                    if (now - lastPressTime < 80) return;
+                    lastPressTime = now;
+                    if (e.type === 'touchstart') lastTouchTime = now;
+                    window.kpPress(btn.getAttribute('data-key'));
+                };
+                const pressEffect = () => btn.classList.add('pressed');
+                const releaseEffect = () => btn.classList.remove('pressed');
+                btn.addEventListener('touchstart', (e) => { pressEffect(); handleInput(e); }, { passive: false });
+                btn.addEventListener('touchend', releaseEffect);
+                btn.addEventListener('touchcancel', releaseEffect);
+                btn.addEventListener('mousedown', (e) => { pressEffect(); handleInput(e); });
+                btn.addEventListener('mouseup', releaseEffect);
+                btn.addEventListener('mouseleave', releaseEffect);
             });
         }
-        document.removeEventListener('click', window.handleOutsideClick);
-        document.addEventListener('click', window.handleOutsideClick);
+
+        document.removeEventListener('click', window.handleOutsideClickAcademic);
+        document.addEventListener('click', window.handleOutsideClickAcademic);
     };
-    setTimeout(initAcademicForm, 100);
 </script>
 
 <?php include 'includes/footer.php'; ?>

@@ -761,3 +761,19 @@ input[type="radio"] {
     filter: none !important;
 }
 .winui-toast { border-radius: 50px !important; padding: 10px 24px !important; font-family: 'Be Vietnam Pro', -apple-system, sans-serif !important; font-weight: 600 !important; font-size: 14.5px !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important; margin-bottom: 20px !important; backdrop-filter: blur(10px) !important; text-align: center; max-width: 90vw; }
+
+/* ========================================================== */
+/* ========== CHẶN TỰ ĐỘNG ZOOM TRÊN ĐIỆN THOẠI (iOS/Android) */
+/* ========== SỬ DỤNG USER-AGENT DETECTION (KHÔNG CHECK PIXEL) */
+/* ========================================================== */
+html[data-device="mobile"], html[data-device="mobile"] body {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Khi thiết bị là Mobile theo User-Agent: ô nhập luôn >= 16px để iOS Safari / Chrome không bao giờ tự zoom khi gõ phím */
+html[data-device="mobile"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-device="mobile"] select,
+html[data-device="mobile"] textarea {
+    font-size: 16px !important;
+}

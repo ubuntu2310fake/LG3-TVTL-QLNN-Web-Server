@@ -1,10 +1,13 @@
+<?php
+$is_mobile_ua = (bool)preg_match('/(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile)/i', $_SERVER['HTTP_USER_AGENT'] ?? '');
+?>
 <!DOCTYPE html>
-<html>
+<html <?= $is_mobile_ua ? 'data-device="mobile"' : '' ?>>
 <head>
     <title><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đăng nhập' : 'Login') ?> - <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Super App Lg3' : 'Super App Lg3') ?></title>
     <link rel="stylesheet" href="static/style.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <style>
         :root { --titlebar-height: 32px; }
         body { 

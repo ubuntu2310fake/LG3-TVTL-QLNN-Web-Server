@@ -59,7 +59,8 @@
         .friend-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .friend-status { font-size: 11px; color: var(--text-muted); }
 
-        .chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); }
+        .chat-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+        .chat-list > .msg-row:first-child { margin-top: auto !important; }
         .msg-row { display: flex; width: 100%; margin-bottom: 5px; position: relative; }
         .msg-me { justify-content: flex-end; } .msg-other { justify-content: flex-start; } 
         
@@ -101,7 +102,20 @@
         .btn-chat { background: var(--chat-bg-bubble); color: var(--text-main); border: 1px solid var(--border-color); }
         .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); margin: 15px 0 5px 15px; text-transform: uppercase; }
 
-        @media (max-width: 768px) { #tvtl-chat-popup { width: 100%; height: 100%; bottom: 0; right: 0; border-radius: 0; } }
+        html[data-device="mobile"] #tvtl-chat-popup,
+        @media (max-width: 768px) { 
+            #tvtl-chat-popup { 
+                width: 100% !important; 
+                height: 100% !important; 
+                height: 100dvh !important; 
+                bottom: 0 !important; 
+                right: 0 !important; 
+                left: 0 !important;
+                top: 0 !important;
+                border-radius: 0 !important; 
+                border: none !important;
+            } 
+        }
 
         /* ==============================================================
            TRỊ TẬN GỐC LỖI TRẮNG XÓA TRÊN AMOLED BẰNG SELECTOR ƯU TIÊN
@@ -141,19 +155,19 @@
             <i class="fas fa-times" style="cursor:pointer; padding:5px;" onclick="StudentChatApp.toggle()" role="button" tabindex="0" aria-label="Close" aria-hidden="true"></i>
         </div>
 
-        <div id="tvtl-list-view" style="display:flex; flex-direction:column; height:100%;">
-            <div style="display:flex; border-bottom:1px solid var(--border-color); background:var(--bg-card);">
+        <div id="tvtl-list-view" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+            <div style="display:flex; border-bottom:1px solid var(--border-color); background:var(--bg-card); flex-shrink:0;">
                 <div id="tab-teachers" class="chat-tab active" onclick="StudentChatApp.switchTab('teachers')" role="button" tabindex="0"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thầy Cô' : 'Teachers') ?></div>
                 <div id="tab-friends" class="chat-tab" onclick="StudentChatApp.switchTab('friends')" role="button" tabindex="0"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn Bè' : 'Friends') ?></div>
             </div>
             
-            <div id="tab-teachers-content" style="flex:1; overflow-y:auto; padding:0; background:var(--bg-body);">
+            <div id="tab-teachers-content" style="flex:1; min-height:0; overflow-y:auto; padding:0 0 35px 0; background:var(--bg-body);">
                 <div id="teacher-list">
                     <div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đang tải...' : 'Loading...') ?></div>
                 </div>
             </div>
 
-            <div id="tab-friends-content" style="display:none; flex:1; overflow-y:auto; padding:0; background:var(--bg-body);">
+            <div id="tab-friends-content" style="display:none; flex:1; min-height:0; overflow-y:auto; padding:0 0 35px 0; background:var(--bg-body);">
                 <div style="padding:10px; background:var(--bg-card); border-bottom:1px solid var(--border-color); position:sticky; top:0; z-index:5;">
                     <div style="display:flex; gap:8px;">
                         <input type="text" id="friend-search-inp" aria-label="Search friends" placeholder="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Nhập tên hoặc Mã HS...' : 'Enter name or Student ID...') ?>" style="flex:1; padding:10px; border:1px solid var(--border-color); background:var(--bg-input); border-radius:8px; outline:none; color:var(--text-main);" onkeypress="if(event.key==='Enter') StudentChatApp.searchFriends()">
@@ -563,6 +577,32 @@ sendMsg: async function() {
             }
         };
     })();
+
+    if (window.visualViewport) {
+        function adjustStudentChatKeyboard() {
+            const pop = document.getElementById('tvtl-chat-popup');
+            const isMobile = document.documentElement.getAttribute('data-device') === 'mobile' || window.innerWidth <= 991;
+            if (pop && pop.style.display === 'flex' && isMobile) {
+                pop.style.height = `${window.visualViewport.height}px`;
+                pop.style.top = `${window.visualViewport.offsetTop}px`;
+                const msgs = document.getElementById('tvtl-chat-msgs');
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            }
+        }
+        window.visualViewport.addEventListener('resize', adjustStudentChatKeyboard);
+        window.visualViewport.addEventListener('scroll', adjustStudentChatKeyboard);
+        document.addEventListener('DOMContentLoaded', () => {
+            const inp = document.getElementById('tvtl-chat-inp');
+            if (inp) {
+                inp.addEventListener('focus', () => {
+                    adjustStudentChatKeyboard();
+                    setTimeout(adjustStudentChatKeyboard, 100);
+                    setTimeout(adjustStudentChatKeyboard, 250);
+                    setTimeout(adjustStudentChatKeyboard, 400);
+                });
+            }
+        });
+    }
     </script>
     <?php endif; ?>
 
@@ -836,11 +876,17 @@ window.a11yAnnounce = function(text) {
 
     function checkPwaStatus() {
         const modal = document.getElementById('pwaPromoModal');
+        if (!modal) return;
         const isApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        const path = window.location.pathname; const isRoot = path === '/' || path === '' || path.endsWith('index.php');
-        const isSmallScreen = window.innerWidth < 992; const platform = navigator.platform || '';
-        const isDevEnvironment = platform.indexOf('Win') !== -1 || (platform.indexOf('Mac') !== -1 && navigator.maxTouchPoints === 0);
-        if (!isApp && !sessionStorage.getItem('pwa_promo_dismissed') && !isRoot && isSmallScreen && !isDevEnvironment) {
+        const path = window.location.pathname;
+        const isRoot = path === '/' || path === '' || path.endsWith('index.php');
+        
+        const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua) ||
+                           (navigator.userAgentData && navigator.userAgentData.mobile) ||
+                           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
+        if (!isApp && !sessionStorage.getItem('pwa_promo_dismissed') && !isRoot && isMobileUA) {
             setTimeout(() => { if(modal) modal.style.display = 'flex'; }, 1500);
         }
     }

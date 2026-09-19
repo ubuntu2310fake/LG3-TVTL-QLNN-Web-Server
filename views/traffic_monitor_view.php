@@ -98,6 +98,7 @@ include 'includes/header.php';
                 <thead>
                     <tr style="position: sticky; top: 0; background: var(--bg-card); z-index: 10;">
                         <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Thời gian' : 'Time') ?></th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tài khoản' : 'Account') ?></th>
                         <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Địa chỉ IP' : 'IP Address') ?></th>
                         <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Trạng thái' : 'Status') ?></th>
                         <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Độ trễ' : 'Latency') ?></th>
@@ -107,7 +108,7 @@ include 'includes/header.php';
                 <tbody>
                     <?php if (empty($recent_logs)): ?>
                         <tr>
-                            <td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không có dữ liệu truy cập nào gần đây.' : 'No recent access data.') ?></td>
+                            <td colspan="6" style="padding: 20px; text-align: center; color: var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không có dữ liệu truy cập nào gần đây.' : 'No recent access data.') ?></td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($recent_logs as $log): ?>
@@ -120,9 +121,14 @@ include 'includes/header.php';
                                 } else {
                                     $statusClass = 'color: #10b981;';
                                 }
+                                $acc = $log['username'] ?? '-';
+                                if ($acc === '-' && preg_match('/[?&]user=([^&]+)/', $log['path'], $m)) {
+                                    $acc = urldecode($m[1]);
+                                }
                             ?>
                             <tr style="border-bottom: 1px solid var(--border-color); hover: background-color: var(--bg-hover);">
                                 <td style="padding: 8px 10px; color: var(--text-muted); white-space: nowrap;"><?= htmlspecialchars($log['time']) ?></td>
+                                <td style="padding: 8px 10px; font-weight: 600; color: <?= $acc !== '-' ? 'var(--accent-color)' : 'var(--text-muted)' ?>; white-space: nowrap;"><?= htmlspecialchars($acc) ?></td>
                                 <td style="padding: 8px 10px; font-family: monospace;"><?= htmlspecialchars($log['ip']) ?></td>
                                 <td style="padding: 8px 10px; <?= $statusClass ?>"><?= htmlspecialchars($log['status']) ?></td>
                                 <td style="padding: 8px 10px;"><?= number_format($log['duration'], 1) ?> ms</td>

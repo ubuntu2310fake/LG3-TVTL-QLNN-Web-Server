@@ -46,16 +46,23 @@ if (isset($_GET['local_api'])) {
     header('Content-Type: application/json');
     require_once 'includes/config.php';
     
-    $action = $_GET['local_api'];
+    $action = $_GET['local_api'] ?? '';
     $inputData = json_decode(file_get_contents('php://input'), true) ?: [];
+    if (empty($inputData) && !empty($_POST)) {
+        $inputData = $_POST;
+        if (isset($inputData['result_data']) && is_string($inputData['result_data'])) {
+            $decoded = json_decode($inputData['result_data'], true);
+            if ($decoded) $inputData['result_data'] = $decoded;
+        }
+    }
     
-    if (!isset($_SESSION['user'])) {
+    if ($action !== 'ai_proxy' && !isset($_SESSION['user'])) {
         echo json_encode(['success' => false, 'msg' => (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vui lòng đăng nhập để sử dụng tính năng này.' : 'Login required to use this feature.')]);
         exit;
     }
     
-    $username = $_SESSION['user']['username'];
-    $full_name = $_SESSION['user']['full_name'];
+    $username = $_SESSION['user']['username'] ?? 'guest';
+    $full_name = $_SESSION['user']['full_name'] ?? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Khách' : 'Guest');
     $current_school_year = $pdo->query("SELECT value FROM config WHERE `key` = 'current_school_year'")->fetchColumn() ?: '2026-2027';
     
     if ($action === 'save_test') {
@@ -134,7 +141,7 @@ if (isset($_GET['local_api'])) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($gemini_payload));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $res = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -157,7 +164,7 @@ if (isset($_GET['local_api'])) {
                     ['role' => 'system', 'content' => $system_msg],
                     ['role' => 'user', 'content' => $user_text]
                 ],
-                'model' => 'llama-3.3-70b-versatile',
+                'model' => 'llama3-8b-8192',
                 'max_tokens' => 1200, 'temperature' => 0.7
             ];
             
@@ -166,7 +173,7 @@ if (isset($_GET['local_api'])) {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($groq_payload));
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Authorization: Bearer ' . $groq_key]);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 20);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             $res = curl_exec($ch);
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -187,9 +194,9 @@ if (isset($_GET['local_api'])) {
             } catch (Exception $dbEx) {
                 // Bỏ qua lỗi lưu DB để vẫn trả về lời khuyên cho học sinh
             }
-            echo json_encode(['advice' => $advice]);
+            echo json_encode(['success' => true, 'advice' => $advice]);
         } else {
-            echo json_encode(['success' => false, 'msg' => (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hệ thống tư vấn tâm lý báo lỗi (Mã: 302)' : 'Psychology counseling system error (Code: 302)'), 'code' => 302]);
+            echo json_encode(['success' => false, 'msg' => (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hệ thống tư vấn hướng nghiệp báo lỗi (Mã: 302)' : 'Career guidance system error (Code: 302)'), 'code' => 302]);
         }
         exit;
     }

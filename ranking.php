@@ -50,9 +50,10 @@ $filter_type = $_GET['filter_type'] ?? 'week';
 $selected_week = isset($_GET['week']) && $_GET['week'] !== '' ? (int)$_GET['week'] : get_current_week($pdo);
 $selected_month = $_GET['month'] ?? '';
 
+$is_vi = (($_SESSION['lang'] ?? 'vi') === 'vi');
 $start_week = $selected_week;
 $end_week = $selected_week;
-$filter_label = __('week', 'Tuần') . " $selected_week";
+$filter_label = ($is_vi ? 'Tuần' : 'Week') . " $selected_week";
 
 if ($filter_type === 'month' && !empty($selected_month)) {
     if (strpos($selected_month, 'm_') === 0) {
@@ -64,19 +65,19 @@ if ($filter_type === 'month' && !empty($selected_month)) {
 
         $start_week = $get_week_by_date($first_day);
         $end_week = $get_week_by_date($last_day);
-        $filter_label = __('month', 'Tháng') . " $m";
+        $filter_label = ($is_vi ? 'Tháng' : 'Month') . " $m";
     } elseif ($selected_month == 'hk1') {
         $start_week = $get_week_by_date($start_date_str);
         $end_week = $get_week_by_date($end_hk1_date);
-        $filter_label = __('semester_1', 'Học kỳ 1');
+        $filter_label = ($is_vi ? 'Học kỳ 1' : 'Semester 1');
     } elseif ($selected_month == 'hk2') {
         $start_week = $get_week_by_date(date('Y-m-d', strtotime($end_hk1_date . ' + 1 day')));
         $end_week = $get_week_by_date($end_year_date);
-        $filter_label = __('semester_2', 'Học kỳ 2');
+        $filter_label = ($is_vi ? 'Học kỳ 2' : 'Semester 2');
     } elseif ($selected_month == 'year') {
         $start_week = $get_week_by_date($start_date_str);
         $end_week = $get_week_by_date($end_year_date);
-        $filter_label = __('full_year', 'Cả năm học');
+        $filter_label = ($is_vi ? 'Cả năm học' : 'Whole Year');
     }
 }
 

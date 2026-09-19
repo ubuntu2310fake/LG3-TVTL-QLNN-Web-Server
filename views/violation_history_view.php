@@ -153,6 +153,13 @@ $role = $_SESSION['user']['role'] ?? '';
                                 <?php if($log['note']): ?>
                                     <small style="color:var(--text-muted); font-style:italic;">"<?= htmlspecialchars($log['note']) ?>"</small>
                                 <?php endif; ?>
+                                <?php if(!empty($log['evidence_img'])): ?>
+                                    <div style="margin-top:4px;">
+                                        <a href="javascript:void(0)" onclick="openEvidenceModal('<?= htmlspecialchars($log['evidence_img']) ?>')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); font-weight:600; text-decoration:none; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);">
+                                            <i class="fas fa-camera" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xem ảnh bằng chứng' : 'View evidence photo') ?>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td><span class="badge-points">-<?= $log['recorded_points'] ?></span></td>
                             <td>
@@ -382,7 +389,7 @@ $role = $_SESSION['user']['role'] ?? '';
     };
 
     function deleteRecord(id, btn) {
-        WinUI.confirm((<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xác nhận xóa' : 'Xác nhận xóa') ?>), (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn có chắc chắn muốn xóa bản ghi này không?' : 'Bạn có chắc chắn muốn xóa bản ghi này không?') ?>), function() {
+        WinUI.confirm(<?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xác nhận xóa' : 'Confirm deletion')) ?>, <?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Bạn có chắc chắn muốn xóa bản ghi này không?' : 'Are you sure you want to delete this record?')) ?>, function() {
             const formData = new FormData();
             formData.append('action', 'delete');
             formData.append('delete_id', id);
@@ -401,11 +408,11 @@ $role = $_SESSION['user']['role'] ?? '';
                     } else {
                         location.reload(); // Chỉ reload nếu không xác định được hàng
                     }
-                    if(typeof Toastify !== 'undefined') Toastify({text: (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? '✅ Đã xóa bản ghi!' : '✅ Đã xóa bản ghi!') ?>), style: {background: "#10b981"}}).showToast();
+                    if(typeof Toastify !== 'undefined') Toastify({text: <?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? '✅ Đã xóa bản ghi!' : '✅ Record deleted!')) ?>, style: {background: "#10b981"}}).showToast();
                 } else {
-                    alert((<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi: ' : 'Lỗi: ') ?>) + data.msg);
+                    alert(<?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi: ' : 'Error: ')) ?> + data.msg);
                 }
-            }).catch(err => alert(<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi kết nối máy chủ!' : 'Lỗi kết nối máy chủ!') ?>));
+            }).catch(err => alert(<?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi kết nối máy chủ!' : 'Server connection error!')) ?>));
         });
     }
 
@@ -417,7 +424,7 @@ $role = $_SESSION['user']['role'] ?? '';
         // Cập nhật giá trị và text cho custom dropdown
         document.getElementById('edit_violation_id').value = v_id;
         const items = document.querySelectorAll('#editModal .select-items div');
-        let foundName = (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? '-- Chọn lỗi vi phạm --' : '-- Select violation error --') ?>);
+        let foundName = <?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? '-- Chọn lỗi vi phạm --' : '-- Select violation error --')) ?>;
         items.forEach(item => {
             if (item.getAttribute('data-vid') == v_id) {
                 foundName = item.innerText.trim();
@@ -443,7 +450,7 @@ $role = $_SESSION['user']['role'] ?? '';
         
         // Validate xem đã chọn lỗi từ custom dropdown chưa
         if(!document.getElementById('edit_violation_id').value) {
-            alert(<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vui lòng chọn loại vi phạm!' : 'Vui lòng chọn loại vi phạm!') ?>);
+            alert(<?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Vui lòng chọn loại vi phạm!' : 'Please select a violation type!')) ?>);
             return;
         }
 
@@ -455,9 +462,9 @@ $role = $_SESSION['user']['role'] ?? '';
             if(data.status === 'success') {
                 location.reload();
             } else {
-                alert((<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi: ' : 'Lỗi: ') ?>) + data.msg);
+                alert(<?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi: ' : 'Error: ')) ?> + data.msg);
             }
-        }).catch(err => alert(<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi kết nối máy chủ!' : 'Lỗi kết nối máy chủ!') ?>));
+        }).catch(err => alert(<?= json_encode((($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi kết nối máy chủ!' : 'Server connection error!')) ?>));
     });
 
     // --- REALTIME SSE UPDATES ---
@@ -498,6 +505,11 @@ $role = $_SESSION['user']['role'] ?? '';
                     noteHtml = `<br><small style="color:var(--text-muted); font-style:italic;">"${data.note}"</small>`;
                 }
 
+                let imgHtml = '';
+                if (data.evidence_img) {
+                    imgHtml = `<div style="margin-top:4px;"><a href="javascript:void(0)" onclick="openEvidenceModal('${data.evidence_img}')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); font-weight:600; text-decoration:none; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);"><i class="fas fa-camera"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xem ảnh bằng chứng' : 'View evidence photo') ?></a></div>`;
+                }
+
                 let actionHtml = '';
                 if (window.currentUserRole === 'ADMIN') {
                     // Create formatted date string for HTML datetime-local input (YYYY-MM-DDThh:mm)
@@ -508,11 +520,11 @@ $role = $_SESSION['user']['role'] ?? '';
                                    
                     actionHtml = `
                     <td>
-                        <button class="btn-action btn-edit" title="${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Sửa' : 'Edit') ?>}" aria-label="${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Sửa' : 'Edit') ?>}"
+                        <button class="btn-action btn-edit" title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Sửa' : 'Edit') ?>" aria-label="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Sửa' : 'Edit') ?>"
                             onclick="openEditModal(${data.id}, ${data.violation_type_id || 0}, ${data.week_number || 1}, '${isoStr}')">
                             <i class="fas fa-edit" aria-hidden="true"></i>
                         </button>
-                        <button class="btn-action btn-delete" title="${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xóa' : 'Delete') ?>}" aria-label="${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xóa' : 'Delete') ?>}" onclick="deleteRecord(${data.id})">
+                        <button class="btn-action btn-delete" title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xóa' : 'Delete') ?>" aria-label="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xóa' : 'Delete') ?>" onclick="deleteRecord(${data.id})">
                             <i class="fas fa-trash" aria-hidden="true"></i>
                         </button>
                     </td>`;
@@ -525,7 +537,7 @@ $role = $_SESSION['user']['role'] ?? '';
                     </td>
                     <td>
                         <span style="background:var(--bg-hover); padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold;">
-                            ${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'Week') ?>} ${data.week_number || 1}
+                            <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'Week') ?> ${data.week_number || 1}
                         </span>
                     </td>
                     <td>
@@ -535,6 +547,7 @@ $role = $_SESSION['user']['role'] ?? '';
                     <td>
                         <div>${name || ''}</div>
                         ${noteHtml}
+                        ${imgHtml}
                     </td>
                     <td><span class="badge-points">-${data.recorded_points || '0'}</span></td>
                     <td>
@@ -544,7 +557,7 @@ $role = $_SESSION['user']['role'] ?? '';
                         </div>
                     </td>
                     <td>
-                        <span style="color:var(--success); font-size:12px; font-weight:600;">${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hiệu lực' : 'Valid') ?>}</span>
+                        <span style="color:var(--success); font-size:12px; font-weight:600;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hiệu lực' : 'Valid') ?></span>
                     </td>
                     ${actionHtml}
                 `;
@@ -558,7 +571,7 @@ $role = $_SESSION['user']['role'] ?? '';
                     row.classList.add('status-deleted');
                     const statusCell = row.cells[6];
                     if (statusCell) {
-                        statusCell.innerHTML = `<span class="tag-deleted">${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không hiệu lực' : 'Invalid') ?>}</span>`;
+                        statusCell.innerHTML = `<span class="tag-deleted"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không hiệu lực' : 'Invalid') ?></span>`;
                     }
                 }
             });
@@ -592,7 +605,7 @@ $role = $_SESSION['user']['role'] ?? '';
                             ${data.class_name || ''}
                         </span>
                     </td>
-                    <td><span style="background:var(--bg-hover); padding:2px 6px; border-radius:4px; font-size:12px;">${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'Week') ?>} ${data.week_number || 1}</span></td>
+                    <td><span style="background:var(--bg-hover); padding:2px 6px; border-radius:4px; font-size:12px;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'Week') ?> ${data.week_number || 1}</span></td>
                     <td>${data.display_name || ''}</td>
                     <td><span class="badge-points">-${data.recorded_points || '0'}</span></td>
                     <td>
@@ -602,7 +615,7 @@ $role = $_SESSION['user']['role'] ?? '';
                         </div>
                     </td>
                     <td>
-                        <span style="color:var(--success); font-size:12px; font-weight:600;">${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hiệu lực' : 'Valid') ?>}</span>
+                        <span style="color:var(--success); font-size:12px; font-weight:600;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hiệu lực' : 'Valid') ?></span>
                     </td>
                 `;
                 tbody.insertBefore(tr, tbody.firstChild);
@@ -618,12 +631,37 @@ $role = $_SESSION['user']['role'] ?? '';
                     row.classList.remove('status-deleted');
                     const statusCell = row.cells[6];
                     if (statusCell) {
-                        statusCell.innerHTML = `<span style="color:var(--success); font-size:12px; font-weight:600;">${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hiệu lực' : 'Valid') ?>}</span>`;
+                        statusCell.innerHTML = `<span style="color:var(--success); font-size:12px; font-weight:600;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Hiệu lực' : 'Valid') ?></span>`;
                     }
                 }
             });
         }
     };
+
+    window.openEvidenceModal = function(src) {
+        if (!src) return;
+        const modal = document.getElementById('evidenceModal');
+        const img = document.getElementById('evidenceModalImg');
+        if (modal && img) {
+            img.src = src;
+            modal.style.display = 'flex';
+        }
+    };
+
+    window.closeEvidenceModal = function() {
+        const modal = document.getElementById('evidenceModal');
+        if (modal) modal.style.display = 'none';
+    };
 </script>
+
+<!-- Lightbox Modal xem ảnh bằng chứng -->
+<div id="evidenceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;" onclick="if(event.target === this) closeEvidenceModal()">
+    <div style="position:relative; max-width:95vw; max-height:92vh; display:flex; flex-direction:column; align-items:center;">
+        <button type="button" onclick="closeEvidenceModal()" aria-label="Đóng" style="position:absolute; top:-40px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <img id="evidenceModalImg" src="" alt="Evidence Image" style="max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    </div>
+</div>
 
 <?php include 'includes/footer.php'; ?>

@@ -70,6 +70,87 @@ if (class_exists('Redis')) {
 }
 
 // =================================================================
+// 2.1 KIỂM TRA BẢO MẬT LG3 SHIELD PASS (ANTI-ABUSE & FINGERPRINT)
+// =================================================================
+if (isset($_COOKIE['lg3_shield_pass'])) {
+    $shield_token = (string)$_COOKIE['lg3_shield_pass'];
+    $is_token_valid = false;
+    
+    if (!empty($shield_token) && str_contains($shield_token, '.')) {
+        $parts = explode('.', $shield_token, 2);
+        if (count($parts) === 2) {
+            $token_time = (int)$parts[0];
+            $token_sig = $parts[1];
+            $client_ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+            $client_ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $salt = 'lg3_secret_salt_2026_secure';
+            $now = time();
+            
+            // Hạn sử dụng tối đa 15 phút (900s)
+            if (($now - $token_time <= 900) && ($token_time <= $now + 60)) {
+                $expected_sig = hash_hmac('sha256', "{$client_ip}|{$client_ua}|{$token_time}", $salt);
+                if (hash_equals($expected_sig, $token_sig)) {
+                    $is_token_valid = true;
+                }
+            }
+        }
+    }
+    
+    if (!$is_token_valid) {
+        // Token giả mạo, hết hạn hoặc bị mang sang IP/User-Agent khác -> Thu hồi ngay & Bắt giải Captcha
+        setcookie('lg3_shield_pass', '', time() - 3600, '/');
+        unset($_COOKIE['lg3_shield_pass']);
+        header("HTTP/1.1 252 LG3 Shield Invalid Token");
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status' => 252,
+            'shield' => 'LG3_SHIELD',
+            'msg' => 'Mã bảo mật không khớp thiết bị hoặc đã hết hạn. Vui lòng giải Captcha để tiếp tục!',
+            'captcha_url' => '/captcha_challenge.php'
+        ]);
+        exit;
+    } else {
+        // Token hợp lệ -> Kiểm tra chống lạm dụng nã tải qua Redis
+        if ($redis_connected) {
+            $token_hash = substr(md5($shield_token), 0, 16);
+            $ban_key = "shield:banned:{$token_hash}";
+            
+            if ($redis->get($ban_key)) {
+                setcookie('lg3_shield_pass', '', time() - 3600, '/');
+                header("HTTP/1.1 252 LG3 Shield Revoked");
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'status' => 252,
+                    'shield' => 'LG3_SHIELD',
+                    'msg' => 'Phát hiện tần suất truy cập bất thường. Token đã bị khóa! Vui lòng giải Captcha lại.',
+                    'captcha_url' => '/captcha_challenge.php'
+                ]);
+                exit;
+            }
+            
+            $rate_key = "shield:rate:{$token_hash}";
+            $req_count = $redis->incr($rate_key);
+            if ($req_count === 1) {
+                $redis->expire($rate_key, 10);
+            } elseif ($req_count > 120) {
+                // Vượt ngưỡng 120 req / 10s trên 1 token -> Khóa token 30 phút
+                $redis->setex($ban_key, 1800, 1);
+                setcookie('lg3_shield_pass', '', time() - 3600, '/');
+                header("HTTP/1.1 252 LG3 Shield Revoked");
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'status' => 252,
+                    'shield' => 'LG3_SHIELD',
+                    'msg' => 'Tần suất gửi request quá cao (DDoS). Token đã bị thu hồi!',
+                    'captcha_url' => '/captcha_challenge.php'
+                ]);
+                exit;
+            }
+        }
+    }
+}
+
+// =================================================================
 // 3. KẾT NỐI DATABASE (PDO)
 // =================================================================
 try {
@@ -168,8 +249,12 @@ register_shutdown_function(function() use ($start_time) {
             file_put_contents($htaccessFile, "Require all denied\n");
         }
         
+        $username = $_SESSION['user']['username'] ?? '';
+        if (empty($username) && isset($_GET['user'])) {
+            $username = $_GET['user'];
+        }
         $logFile = $logDir . '/access_system.log';
-        $logLine = sprintf("[%s]\t%s\t%s\t%s\t%s\n", date('Y-m-d H:i:s'), $ip_address, round($duration, 2), $status_code, $path);
+        $logLine = sprintf("[%s]\t%s\t%s\t%s\t%s\t%s\n", date('Y-m-d H:i:s'), $ip_address, round($duration, 2), $status_code, $path, $username ?: '-');
         
         // Ghi log bảo vệ chống xung đột ghi bằng LOCK_EX
         file_put_contents($logFile, $logLine, FILE_APPEND | LOCK_EX);

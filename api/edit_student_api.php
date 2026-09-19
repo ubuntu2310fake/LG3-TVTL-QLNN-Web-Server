@@ -82,8 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Cập nhật Student
+        $gender = !empty($_POST['gender']) ? $_POST['gender'] : null;
         $thuylinh = isset($_POST['thuylinh']) && $_POST['thuylinh'] !== '' ? (int)$_POST['thuylinh'] : null;
-        $pdo->prepare("UPDATE student SET name=?, dob=?, class_id=?, image_url=?, thuylinh=? WHERE id=?")->execute([$name, $dob, $class_id, $image_url, $thuylinh, $id]);
+        $pdo->prepare("UPDATE student SET name=?, dob=?, gender=?, class_id=?, image_url=?, thuylinh=? WHERE id=?")->execute([$name, $dob, $gender, $class_id, $image_url, $thuylinh, $id]);
 
         // Cập nhật User Role (Cờ đỏ)
         $role = $_POST['user_role'] ?? 'STUDENT';

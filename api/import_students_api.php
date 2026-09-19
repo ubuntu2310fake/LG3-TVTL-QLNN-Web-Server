@@ -38,22 +38,35 @@ if ($action === 'preview' || $action === 'import') {
             $col2 = trim($row[2] ?? '');
             $col3 = trim($row[3] ?? '');
             $col4 = trim($row[4] ?? '');
+            $col5 = trim($row[5] ?? '');
 
-            if (empty($col0) && empty($col1)) continue;
+            if (empty($col0) && empty($col1) && empty($col2)) continue;
 
-            // Tự động nhận diện nếu cột 0 là STT số (1, 2, 3...) và cột 1 là Mã HS
-            if (is_numeric($col0) && !empty($col1)) {
+            // Định dạng mới (A: STT, B: Lớp, C: Mã HS, D: Họ tên, E: Ngày sinh, F: Giới tính)
+            // Nhận diện: Cột 0 là số STT, Cột 1 là Tên Lớp (VD: 10A1), Cột 2 là Mã HS (VD: K49A1001)
+            if (is_numeric($col0) && !empty($col1) && !empty($col2)) {
+                $thuylinh = (int)$col0;
+                $class_name = $col1;
+                $code = $col2;
+                $name = $col3;
+                $dob = $col4;
+                $gender = $col5;
+            } elseif (is_numeric($col0) && !empty($col1) && empty($col5)) {
+                // Định dạng cũ 1 (STT, Mã HS, Họ tên, Lớp, Ngày sinh)
                 $thuylinh = (int)$col0;
                 $code = $col1;
                 $name = $col2;
                 $class_name = $col3;
                 $dob = $col4;
+                $gender = '';
             } else {
+                // Định dạng cũ 2 (Mã HS, Họ tên, Lớp, Ngày sinh, STT)
                 $code = $col0;
                 $name = $col1;
                 $class_name = $col2;
                 $dob = $col3;
                 $thuylinh = is_numeric($col4) ? (int)$col4 : (preg_match('/(\d{2,3})$/', $code, $m) ? (int)$m[1] : null);
+                $gender = $col5;
             }
 
             if (empty($code) || empty($name)) continue;
@@ -63,6 +76,7 @@ if ($action === 'preview' || $action === 'import') {
                 'name' => $name,
                 'class_name' => $class_name,
                 'dob' => $dob,
+                'gender' => $gender,
                 'thuylinh' => $thuylinh
             ];
         }
@@ -81,44 +95,70 @@ if ($action === 'preview' || $action === 'import') {
         if ($action === 'import') {
             $pdo->beginTransaction();
 
+            $default_pass_hash = password_hash('123456', PASSWORD_DEFAULT);
+
+            $stmtFindClass = $pdo->prepare("SELECT id FROM classroom WHERE name = ?");
+            $stmtInsertClass = $pdo->prepare("INSERT INTO classroom (name, grade) VALUES (?, ?)");
+
+            $stmtCheckStu = $pdo->prepare("SELECT id FROM student WHERE code = ?");
+            $stmtUpdateStu = $pdo->prepare("UPDATE student SET name = ?, class_id = ?, thuylinh = COALESCE(?, thuylinh), dob = COALESCE(NULLIF(?, ''), dob), gender = COALESCE(NULLIF(?, ''), gender) WHERE code = ?");
+            $stmtInsertStu = $pdo->prepare("INSERT INTO student (code, name, class_id, thuylinh, dob, gender) VALUES (?, ?, ?, ?, ?, ?)");
+
+            $stmtCheckUser = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+            $stmtInsertUser = $pdo->prepare("INSERT INTO users (username, password_hash, role, full_name, is_default_password) VALUES (?, ?, 'STUDENT', ?, 'on')");
+            $stmtUpdateUser = $pdo->prepare("UPDATE users SET full_name = ? WHERE username = ?");
+
+            $classCache = [];
+
             foreach ($data as $item) {
                 $code = $item['code'];
                 $name = $item['name'];
                 $className = $item['class_name'];
                 $thuylinh = $item['thuylinh'];
+                $dob = $item['dob'] ?: null;
+                $gender = $item['gender'] ?: null;
 
                 // 1. Kiểm tra và tạo Lớp học nếu chưa có
                 $class_id = null;
                 if (!empty($className)) {
-                    $stmtClass = $pdo->prepare("SELECT id FROM classroom WHERE name = ?");
-                    $stmtClass->execute([$className]);
-                    $class_id = $stmtClass->fetchColumn();
+                    if (isset($classCache[$className])) {
+                        $class_id = $classCache[$className];
+                    } else {
+                        $stmtFindClass->execute([$className]);
+                        $class_id = $stmtFindClass->fetchColumn();
 
-                    if (!$class_id) {
-                        // Tính Khối (Grade) từ tên lớp (VD: 10A1 -> 10)
-                        $grade = 10;
-                        if (preg_match('/^(\d+)/', $className, $matches)) {
-                            $grade = (int)$matches[1];
+                        if (!$class_id) {
+                            // Tính Khối (Grade) từ tên lớp (VD: 10A1 -> 10)
+                            $grade = 10;
+                            if (preg_match('/^(\d+)/', $className, $matches)) {
+                                $grade = (int)$matches[1];
+                            }
+                            $stmtInsertClass->execute([$className, $grade]);
+                            $class_id = $pdo->lastInsertId();
                         }
-                        $stmtInsertClass = $pdo->prepare("INSERT INTO classroom (name, grade) VALUES (?, ?)");
-                        $stmtInsertClass->execute([$className, $grade]);
-                        $class_id = $pdo->lastInsertId();
+                        $classCache[$className] = $class_id;
                     }
                 }
 
                 // 2. Kiểm tra Học sinh (SBD) -> Insert hoặc Update
-                $stmtCheckStu = $pdo->prepare("SELECT id FROM student WHERE code = ?");
                 $stmtCheckStu->execute([$code]);
                 $stu_id = $stmtCheckStu->fetchColumn();
 
                 if ($stu_id) {
-                    // Update nếu đã tồn tại
-                    $stmtUpdateStu = $pdo->prepare("UPDATE student SET name = ?, class_id = ?, thuylinh = COALESCE(?, thuylinh) WHERE code = ?");
-                    $stmtUpdateStu->execute([$name, $class_id, $thuylinh, $code]);
+                    // Update nếu đã tồn tại: ánh xạ sang lớp mới, STT mới, tên, ngày sinh, giới tính
+                    $stmtUpdateStu->execute([$name, $class_id, $thuylinh, $dob, $gender, $code]);
                 } else {
                     // Insert mới
-                    $stmtInsertStu = $pdo->prepare("INSERT INTO student (code, name, class_id, thuylinh) VALUES (?, ?, ?, ?)");
-                    $stmtInsertStu->execute([$code, $name, $class_id, $thuylinh]);
+                    $stmtInsertStu->execute([$code, $name, $class_id, $thuylinh, $dob, $gender]);
+                }
+
+                // 3. Tự tạo tài khoản với MK 123456 vào users rồi set is_default_password = 'on'
+                $stmtCheckUser->execute([$code]);
+                $user_id = $stmtCheckUser->fetchColumn();
+                if (!$user_id) {
+                    $stmtInsertUser->execute([$code, $default_pass_hash, $name]);
+                } else {
+                    $stmtUpdateUser->execute([$name, $code]);
                 }
             }
 

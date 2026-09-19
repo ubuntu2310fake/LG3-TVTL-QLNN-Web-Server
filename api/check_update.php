@@ -11,13 +11,13 @@ $github_base_url = "https://github.com/ubuntu2310fake/LG3-TVTL-QLNN-Mobile/relea
 // ==========================================
 // 1. DANH SÁCH CHẶN (BẮT BUỘC CẬP NHẬT)
 // Những phiên bản trong mảng này sẽ bị khóa app, không cho ấn "Để sau"
-// Toàn bộ các phiên bản trước 2.0.6_hf11 đều bị chặn bắt buộc nâng cấp
+// Toàn bộ các phiên bản trước 2.1.0 đều bị chặn bắt buộc nâng cấp
 // ==========================================
 $blocked_versions = [
     '1.0.0', '1.0.1', '1.0.1_r1', '1.0.2', '1.0.3_r1', '1.0.2_r1', '1.0.4_r1', '1.0.5', '1.0.5_r1',
     '2.0.0', '2.0.1', '2.0.2', '2.0.3', '2.0.4', '2.0.5', '2.0.6',
     '2.0.6_hf1', '2.0.6_hf2', '2.0.6_hf3', '2.0.6_hf4', '2.0.6_hf5',
-    '2.0.6_hf6', '2.0.6_hf7', '2.0.6_hf8', '2.0.6_hf9', '2.0.6_hf10'
+    '2.0.6_hf6', '2.0.6_hf7', '2.0.6_hf8', '2.0.6_hf9', '2.0.6_hf10', '2.0.6_hf11', '2.0.6_hf12'
 ];
 
 // Mảng cấu hình các phiên bản mới
@@ -247,12 +247,25 @@ $updates = [
             'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
             'universal'   => 'LG3_TVTL_QLNN_Android.apk'
         ]
+    ],
+    '2.1.0' => [
+        'tag' => '2.1.0', // Tên tag trên GitHub
+        'note' => __('update_note_2_1_0', "Bản phát hành chính thức 2.1.0:
+- Nâng cấp toàn diện giao diện và thuật toán trắc nghiệm tâm lý & hướng nghiệp (Holland, DISC, MI, MTVT)
+- Bổ sung chụp và đính kèm ảnh bằng chứng trực tiếp trong Chấm cổng nề nếp
+- Tra cứu và lọc lịch sử vi phạm thông minh theo lớp, ngày tháng
+- Hoàn thiện hệ thống đa ngôn ngữ (Việt - Anh) và tối ưu hóa hiệu suất toàn hệ thống"),
+        'files' => [
+            'arm64-v8a'   => 'LG3_TVTL_QLNN_Android_arm64-v8a.apk',
+            'armeabi-v7a' => 'LG3_TVTL_QLNN_Android_armeabi-v7a.apk',
+            'universal'   => 'LG3_TVTL_QLNN_Android.apk'
+        ]
     ]
     // Sếp có thể thêm bản mới vào đây
 ];
 
 // Định nghĩa phiên bản cao nhất hiện tại
-$latest_version = '2.0.6_hf11';
+$latest_version = '2.1.0';
 $current_patch = isset($_GET['patch']) ? (int)$_GET['patch'] : 0;
 
 $hotfixes = [];

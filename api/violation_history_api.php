@@ -126,7 +126,7 @@ try {
     $totalClass = $stmtCountClass->fetchColumn();
     $total_pages_class = ceil($totalClass / $limit);
 
-    $sqlGate = "SELECT vr.id, vr.recorded_violation_name, vt.content_en AS violation_name_en, vr.recorded_points, vr.date_created, vr.is_deleted, vr.week_number, vr.note,
+    $sqlGate = "SELECT vr.id, vr.recorded_violation_name, vt.content_en AS violation_name_en, vr.recorded_points, vr.date_created, vr.is_deleted, vr.week_number, vr.note, vr.evidence_img,
                 vt.content_en AS recorded_violation_name_en,
                 s.name AS student_name, s.code AS student_code, c.name AS class_name, u.full_name AS reporter_fullname, vr.reporter AS reporter_username
                 FROM violation_record vr LEFT JOIN student s ON vr.student_id = s.id

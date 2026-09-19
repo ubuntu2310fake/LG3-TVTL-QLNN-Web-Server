@@ -103,7 +103,7 @@ include 'includes/header.php';
 
     <div class="table-responsive">
         <table class="rank-table">
-            <thead><tr><th width="60"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ảnh' : 'Image') ?></th><th width="50" style="text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'STT' : 'STT') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Mã HS' : 'Student Code') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ Tên' : 'Full Name') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lớp' : 'Class') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày sinh' : 'Date of Birth') ?></th><th width="100"></th></tr></thead>
+            <thead><tr><th width="60"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ảnh' : 'Image') ?></th><th width="50" style="text-align:center;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'STT' : 'STT') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Mã HS' : 'Student Code') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Họ Tên' : 'Full Name') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lớp' : 'Class') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ngày sinh' : 'Date of Birth') ?></th><th><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Giới tính' : 'Gender') ?></th><th width="100"></th></tr></thead>
             <tbody>
                 <?php if ($students): foreach ($students as $s): ?>
                 <tr id="row_<?= $s->code ?>">
@@ -122,6 +122,7 @@ include 'includes/header.php';
                             <span class="old-value"><?= htmlspecialchars($s->dob ?: '--') ?></span><br><span class="pending-change"><?= htmlspecialchars($s->pending_dob) ?></span>
                         <?php else: ?><?= htmlspecialchars($s->dob ?: '--/--/----') ?><?php endif; ?>
                     </td>
+                    <td><?= htmlspecialchars($s->gender ?: '') ?></td>
                     <td>
                         <div style="display:flex; align-items:center; gap:5px; justify-content:flex-end;">
                             <?php if ($s->has_pending_changes): ?><button onclick="quickApprove('<?= $s->code ?>')" class="btn-approve" title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chấp nhận thay đổi' : 'Accept Changes') ?>" aria-label="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chấp nhận thay đổi' : 'Accept Changes') ?>"><i class="fas fa-check" aria-hidden="true"></i></button><?php endif; ?>
@@ -131,7 +132,7 @@ include 'includes/header.php';
                     </td>
                 </tr>
                 <?php endforeach; else: ?>
-                <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không tìm thấy học sinh nào.' : 'No students found.') ?></td></tr>
+                <tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Không tìm thấy học sinh nào.' : 'No students found.') ?></td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

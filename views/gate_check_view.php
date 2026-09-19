@@ -30,15 +30,41 @@ include 'includes/header.php';
     .select-items div, .result-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); font-size: 14px; color: var(--text-main); }
     .select-items div:hover, .result-item:hover { background: var(--bg-hover); color: var(--accent-color); font-weight: 500; }
     
-    .student-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px; max-height: 50vh; overflow-y: auto; }
+    @media (min-width: 992px) {
+        .grid-sidebar-layout {
+            grid-template-columns: 420px minmax(0, 1fr) !important;
+            gap: 20px !important;
+        }
+    }
+    @media (min-width: 1200px) {
+        .grid-sidebar-layout {
+            grid-template-columns: 460px minmax(0, 1fr) !important;
+        }
+    }
+    @media (min-width: 1600px) {
+        .grid-sidebar-layout {
+            grid-template-columns: 500px minmax(0, 1fr) !important;
+        }
+    }
+    
+    .student-grid { 
+        display: grid; 
+        grid-template-columns: repeat(2, minmax(0, 1fr)); 
+        gap: 8px; 
+        padding: 6px 2px; 
+        max-height: 55vh; 
+        overflow-y: auto; 
+        overflow-x: hidden; 
+    }
     .student-card {
         background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px;
-        padding: 10px; cursor: pointer; transition: all 0.2s ease;
+        padding: 8px 10px; cursor: pointer; transition: all 0.2s ease;
         display: flex; flex-direction: column; justify-content: center; text-align: left;
+        min-width: 0; box-sizing: border-box; overflow: hidden;
     }
     .student-card:hover { background: var(--bg-hover); border-color: var(--accent-color); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 95, 186, 0.1); }
-    .st-name { font-weight: 700; font-size: 13px; color: var(--text-main); margin-bottom: 3px; }
-    .st-code { font-size: 11px; color: var(--text-muted); background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; width: fit-content; margin-top: 3px;}
+    .st-name { font-weight: 700; font-size: 13px; color: var(--text-main); margin-bottom: 2px; word-break: break-word; line-height: 1.25; }
+    .st-code { font-size: 11px; color: var(--text-muted); background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; width: fit-content; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     
     #qr-reader { width: 100%; border-radius: 12px; overflow: hidden; border: none !important; background: transparent !important; }
     #qr-reader__scan_region { background: transparent !important; } 
@@ -58,11 +84,6 @@ include 'includes/header.php';
     <div class="win-card">
         <h3 style="margin-top:0; color:var(--accent-color); border-bottom:1px solid var(--border-color); padding-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
             <span><i aria-hidden="true" class="fas fa-torii-gate"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Kiểm Tra Cổng' : 'Gate Check') ?></span>
-            <div style="display:flex; align-items:center; background:var(--bg-hover); padding:5px 15px; border-radius:20px;">
-                <span style="font-size:13px; color:var(--text-muted); margin-right:5px;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần:' : 'Week') ?></span>
-                <input type="number" id="globalWeekInput" aria-label="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tuần' : 'Week') ?>" value="<?= $default_week ?>" min="1" 
-                       style="width:40px; border:none; background:transparent; font-weight:bold; color:var(--accent-color); text-align:center; font-size:15px; outline:none;">
-            </div>
         </h3>
 
         <button onclick="toggleQRScanner()" class="win-btn" style="width: 100%; margin-bottom: 15px; justify-content: center; background-color: var(--text-main); color: var(--bg-body);">
@@ -160,7 +181,48 @@ include 'includes/header.php';
 
             <input type="text" id="noteInput" aria-label="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ghi chú thêm...' : 'Additional notes...') ?>" class="win-input" placeholder="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ghi chú thêm...' : 'Additional notes...') ?>" style="margin-top:10px;">
             
-            <button onclick="submitViolation()" class="win-btn win-btn-danger" style="width:100%; margin-top:10px; font-weight:bold; padding:12px;">
+            <!-- KHỐI ẢNH BẰNG CHỨNG VI PHẠM -->
+            <div class="evidence-section" style="margin-top:12px; background:var(--bg-hover); padding:10px 12px; border-radius:8px; border:1px dashed var(--border-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-weight:600; font-size:13px; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-camera" aria-hidden="true" style="color:var(--accent-color);"></i>
+                        <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Ảnh bằng chứng vi phạm' : 'Violation Evidence Photo') ?>
+                    </span>
+                    <small style="color:var(--text-muted); font-size:11px;"><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? '(Tùy chọn)' : '(Optional)') ?></small>
+                </div>
+
+                <!-- 2 Nút: Chụp ảnh trực tiếp & Chọn từ máy -->
+                <div id="evidenceActionBtns" style="display:flex; gap:8px;">
+                    <button type="button" onclick="triggerEvidenceCamera()" class="win-btn" style="flex:1; justify-content:center; padding:8px 10px; font-size:13px; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border-color);">
+                        <i class="fas fa-camera" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chụp ảnh' : 'Take Photo') ?>
+                    </button>
+                    <button type="button" onclick="triggerEvidenceGallery()" class="win-btn" style="flex:1; justify-content:center; padding:8px 10px; font-size:13px; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border-color);">
+                        <i class="fas fa-image" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chọn từ máy' : 'From Device') ?>
+                    </button>
+                </div>
+
+                <!-- Hidden inputs -->
+                <input type="file" id="evidenceCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleEvidenceFileSelect(this)">
+                <input type="file" id="evidenceGalleryInput" accept="image/*" style="display:none;" onchange="handleEvidenceFileSelect(this)">
+
+                <!-- Khung xem trước ảnh (Preview) -->
+                <div id="evidencePreviewContainer" style="display:none; margin-top:10px; position:relative; border-radius:8px; overflow:hidden; border:1px solid var(--border-color); background:var(--bg-card);">
+                    <div style="position:relative; max-height:200px; display:flex; justify-content:center; align-items:center; background:#111; overflow:hidden;">
+                        <img id="evidencePreviewImg" src="" alt="Evidence Preview" style="max-height:200px; width:100%; object-fit:contain; cursor:pointer;" onclick="openEvidenceModal(this.src)">
+                        <button type="button" onclick="removeEvidenceImage()" aria-label="Xóa ảnh" title="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xóa ảnh' : 'Remove Image') ?>" style="position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.9); color:#fff; border:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.3); font-size:12px;">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div style="padding:6px 10px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted);">
+                        <span id="evidenceFileInfo">evidence.jpg</span>
+                        <span style="color:var(--accent-color); cursor:pointer; font-weight:500;" onclick="openEvidenceModal(document.getElementById('evidencePreviewImg').src)">
+                            <i class="fas fa-search-plus" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xem lớn' : 'View Full') ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="submitViolation()" class="win-btn win-btn-danger" style="width:100%; margin-top:12px; font-weight:bold; padding:12px;">
                 <i aria-hidden="true" class="fas fa-save"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'LƯU VI PHẠM' : 'SAVE VIOLATION') ?>
             </button>
         </div>
@@ -177,6 +239,16 @@ include 'includes/header.php';
                             <b><?= $r['student_name'] ?? (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tập thể' : 'Collective') ?></b> <small>(<?= $r['class_name'] ?? '' ?>)</small><br>
                             <span style="color:var(--danger-color); font-weight:500;">- <?= ($_SESSION['lang'] ?? 'vi') === 'en' && !empty($r['recorded_violation_name_en']) ? htmlspecialchars($r['recorded_violation_name_en']) : htmlspecialchars($r['recorded_violation_name']) ?></span><br>
                             <small style="color:var(--text-muted);"><?= date('H:i d/m', strtotime($r['date_created'])) ?></small>
+                            <?php if (!empty($r['reporter'])): ?>
+                            <span style="font-size:11px; color:var(--text-muted); margin-left:6px;"><i class="fas fa-user-edit" style="font-size:10px;"></i> <?= htmlspecialchars($r['reporter']) ?></span>
+                            <?php endif; ?>
+                            <?php if (!empty($r['evidence_img'])): ?>
+                            <div style="margin-top:4px;">
+                                <a href="javascript:void(0)" onclick="openEvidenceModal('<?= htmlspecialchars($r['evidence_img']) ?>')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); text-decoration:none; font-weight:600; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);">
+                                    <i class="fas fa-camera" aria-hidden="true"></i> <?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xem ảnh' : 'View photo') ?>
+                                </a>
+                            </div>
+                            <?php endif; ?>
                         </div>
                         <button onclick="deleteRecord('<?= $r['id'] ?>')" class="btn-delete-record" style="border-radius:4px; padding:5px 8px; cursor:pointer;">
                             <i aria-hidden="true" class="fas fa-trash"></i>
@@ -191,6 +263,16 @@ include 'includes/header.php';
     </div>
 </div>
 
+<!-- Lightbox Modal xem ảnh bằng chứng -->
+<div id="evidenceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;" onclick="if(event.target === this) closeEvidenceModal()">
+    <div style="position:relative; max-width:95vw; max-height:92vh; display:flex; flex-direction:column; align-items:center;">
+        <button type="button" onclick="closeEvidenceModal()" aria-label="Đóng" style="position:absolute; top:-40px; right:0; background:none; border:none; color:#fff; font-size:26px; cursor:pointer;">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <img id="evidenceModalImg" src="" alt="Evidence Image" style="max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    </div>
+</div>
+
 <script>
     window.pageDestroy = async function() {
         if (window.gc_scanner && window.gc_isScanning) {
@@ -200,6 +282,7 @@ include 'includes/header.php';
     };
 
     window.pageInit = function() {
+        window.currentUsername = <?= json_encode($currentUser ?? ($_SESSION['user']['username'] ?? '')) ?>;
         // Gọi ngay 1 lần để đè lên cache PJAX cũ nếu người dùng vừa chuyển tab về
         fetch('gate_check.php?action=recent_json', { credentials: 'same-origin' }).then(r => r.json()).then(data => {
             if (data.status !== 'success') return;
@@ -210,11 +293,15 @@ include 'includes/header.php';
             const lang = window.currentLangCode || 'vi';
             list.innerHTML = violations.map(r => {
                 const name = (lang === 'en' && r.display_name_en) ? r.display_name_en : (r.display_name || r.recorded_violation_name);
+                const imgBadge = r.evidence_img ? `<div style="margin-top:4px;"><a href="javascript:void(0)" onclick="openEvidenceModal('${r.evidence_img}')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); text-decoration:none; font-weight:600; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);"><i class="fas fa-camera" aria-hidden="true"></i> ${window.LANG && window.LANG.view_photo || (lang === 'en' ? 'View photo' : 'Xem ảnh')}</a></div>` : '';
+                const reporterTag = r.reporter ? `<span style="font-size:11px; color:var(--text-muted); margin-left:6px;"><i class="fas fa-user-edit" style="font-size:10px;"></i> ${r.reporter}</span>` : '';
                 return `<div class="history-item" id="rec_${r.id}">
                     <div>
                         <b>${r.student_name || 'Tập thể'}</b> <small>(${r.class_name || ''})</small><br>
                         <span style="color:var(--danger-color); font-weight:500;">- ${name}</span><br>
                         <small style="color:var(--text-muted);">${r.time_label}</small>
+                        ${reporterTag}
+                        ${imgBadge}
                     </div>
                     <button onclick="deleteRecord('${r.id}')" class="btn-delete-record" style="border-radius:4px; padding:5px 8px; cursor:pointer;">
                         <i aria-hidden="true" class="fas fa-trash"></i>
@@ -264,6 +351,12 @@ include 'includes/header.php';
             };
 
             inpSearch.oninput = handleSearch;
+            inpSearch.onfocus = function() {
+                const box = document.getElementById('resultBox');
+                if (box && box.children.length > 0 && inpSearch.value.trim().length >= 2) {
+                    box.style.display = 'block';
+                }
+            };
             inpSearch.onkeydown = function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -271,13 +364,34 @@ include 'includes/header.php';
                 }
             };
         }
-        document.onclick = () => window.closeAllSelects();
+
+        document.addEventListener('click', function(e) {
+            window.closeAllSelects();
+            const searchWrapper = document.querySelector('.search-wrapper');
+            const box = document.getElementById('resultBox');
+            if (box && searchWrapper && !searchWrapper.contains(e.target)) {
+                box.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const box = document.getElementById('resultBox');
+                if (box) box.style.display = 'none';
+                window.closeAllSelects();
+            }
+        });
 
 
         // === SSEManager: Nhận push vi phạm mới từ server ngay lập tức ===
         if (window.SSEManager) {
-            // Nhận vi phạm MỚI → prepend vào đầu danh sách
+            // Nhận vi phạm MỚI → CHỈ thêm vào bảng "Vừa chấm xong" NẾU DO CHÍNH TÀI KHOẢN NÀY CHẤM
             window.SSEManager.on('violation_new', (data) => {
+                const myUser = window.currentUsername || "<?= htmlspecialchars($currentUser ?? '') ?>";
+                // Nếu người khác chấm → BỎ QUA, không poll vào bảng "Vừa chấm xong" của mình
+                if (data.reporter && myUser && data.reporter !== myUser) {
+                    return;
+                }
                 const list = document.getElementById('historyList');
                 if (!list) return;
                 // Xóa thông báo "chưa có dữ liệu" nếu còn
@@ -288,12 +402,16 @@ include 'includes/header.php';
                 const el = document.createElement('div');
                 const lang = window.currentLangCode || 'vi';
                 const name = (lang === 'en' && data.display_name_en) ? data.display_name_en : data.display_name;
+                const imgBadge = data.evidence_img ? `<div style="margin-top:4px;"><a href="javascript:void(0)" onclick="openEvidenceModal('${data.evidence_img}')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); text-decoration:none; font-weight:600; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);"><i class="fas fa-camera" aria-hidden="true"></i> ${window.LANG && window.LANG.view_photo || (lang === 'en' ? 'View photo' : 'Xem ảnh')}</a></div>` : '';
+                const reporterBadge = data.reporter ? `<span style="font-size:11px; color:var(--text-muted); margin-left:6px;"><i class="fas fa-user-edit" style="font-size:10px;"></i> ${data.reporter}</span>` : '';
                 el.innerHTML = `<div class="history-item" id="rec_${data.id}">
                     <div>
                         <b>${data.student_name || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Tập thể' : 'Collective') ?>"}</b>
                         <small>(${data.class_name || ''})</small><br>
                         <span style="color:var(--danger-color); font-weight:500;">- ${name}</span><br>
                         <small style="color:var(--text-muted);">${data.time_label || ''}</small>
+                        ${reporterBadge}
+                        ${imgBadge}
                     </div>
                     <button onclick="deleteRecord('${data.id}')" class="btn-delete-record"
                         aria-label="<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Xóa' : 'Delete') ?>"
@@ -332,11 +450,15 @@ include 'includes/header.php';
                     const lang = window.currentLangCode || 'vi';
                     list.innerHTML = violations.map(r => {
                         const name = (lang === 'en' && r.display_name_en) ? r.display_name_en : (r.display_name || r.recorded_violation_name);
+                        const imgBadge = r.evidence_img ? `<div style="margin-top:4px;"><a href="javascript:void(0)" onclick="openEvidenceModal('${r.evidence_img}')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); text-decoration:none; font-weight:600; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);"><i class="fas fa-camera" aria-hidden="true"></i> ${window.LANG && window.LANG.view_photo || (lang === 'en' ? 'View photo' : 'Xem ảnh')}</a></div>` : '';
+                        const reporterTag = r.reporter ? `<span style="font-size:11px; color:var(--text-muted); margin-left:6px;"><i class="fas fa-user-edit" style="font-size:10px;"></i> ${r.reporter}</span>` : '';
                         return `<div class="history-item" id="rec_${r.id}">
                             <div>
                                 <b>${r.student_name || 'Tập thể'}</b> <small>(${r.class_name || ''})</small><br>
                                 <span style="color:var(--danger-color); font-weight:500;">- ${name}</span><br>
                                 <small style="color:var(--text-muted);">${r.time_label}</small>
+                                ${reporterTag}
+                                ${imgBadge}
                             </div>
                             <button onclick="deleteRecord('${r.id}')" class="btn-delete-record" style="border-radius:4px; padding:5px 8px; cursor:pointer;">
                                 <i aria-hidden="true" class="fas fa-trash"></i>
@@ -647,9 +769,9 @@ include 'includes/header.php';
                 // Nâng cấp: Thêm avatar vào danh sách học sinh theo lớp
                 const avatarUrl = s.image_url ? s.image_url : 'static/default.png';
                 html += `<div role="button" tabindex="0" class="student-card" onclick="window.selectStudent('${s.id}', '${s.name}', '${s.class_name}', '${s.code}', '${s.image_url}')">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <img src="${avatarUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color);">
-                                <div><div class="st-name" style="margin-bottom:0;">${s.name}</div><div class="st-code" style="margin-top:2px;">${s.thuylinh ? 'STT ' + s.thuylinh + ' • ' : ''}${s.code}</div></div>
+                            <div style="display:flex; align-items:center; gap:8px; min-width:0; width:100%;">
+                                <img src="${avatarUrl}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--border-color); flex-shrink:0;">
+                                <div style="min-width:0; flex:1; overflow:hidden;"><div class="st-name" style="margin-bottom:0;">${s.name}</div><div class="st-code" style="margin-top:2px;">${s.thuylinh ? 'STT ' + s.thuylinh + ' • ' : ''}${s.code}</div></div>
                             </div>
                          </div>`; 
             });
@@ -676,12 +798,124 @@ include 'includes/header.php';
         setTimeout(() => { const el = document.getElementById('violationForm'); if (el) { const offset = 70; const top = el.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({top: top, behavior: 'smooth'}); } }, 150);
     };
 
+    // --- QUẢN LÝ ẢNH BẰNG CHỨNG VI PHẠM ---
+    window.evidenceBlob = null;
+
+    window.triggerEvidenceCamera = function() {
+        const inp = document.getElementById('evidenceCameraInput');
+        if (inp) inp.click();
+    };
+
+    window.triggerEvidenceGallery = function() {
+        const inp = document.getElementById('evidenceGalleryInput');
+        if (inp) inp.click();
+    };
+
+    window.compressImage = function(file, maxWidth = 1600, maxHeight = 1600, quality = 0.82) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxWidth || h > maxHeight) {
+                        if (w > h) {
+                            h = Math.round((h * maxWidth) / w);
+                            w = maxWidth;
+                        } else {
+                            w = Math.round((w * maxHeight) / h);
+                            h = maxHeight;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(function(blob) {
+                        resolve(blob || file);
+                    }, 'image/jpeg', quality);
+                };
+                img.onerror = function() { resolve(file); };
+                img.src = e.target.result;
+            };
+            reader.onerror = function() { resolve(file); };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    window.handleEvidenceFileSelect = async function(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        
+        if (typeof Toastify !== 'undefined') {
+            Toastify({text: window.LANG && window.LANG.processing_image || "📸 Đang xử lý và nén ảnh...", duration: 1500, style: {background: "#005fba"}}).showToast();
+        }
+        
+        try {
+            const compressed = await window.compressImage(file);
+            window.evidenceBlob = compressed;
+            
+            const previewUrl = URL.createObjectURL(compressed);
+            const previewImg = document.getElementById('evidencePreviewImg');
+            const previewContainer = document.getElementById('evidencePreviewContainer');
+            const fileInfo = document.getElementById('evidenceFileInfo');
+            
+            if (previewImg) previewImg.src = previewUrl;
+            if (previewContainer) previewContainer.style.display = 'block';
+            if (fileInfo) {
+                const kb = Math.round(compressed.size / 1024);
+                fileInfo.innerText = `${file.name || 'photo.jpg'} (~${kb} KB)`;
+            }
+        } catch(err) {
+            window.evidenceBlob = file;
+            const previewUrl = URL.createObjectURL(file);
+            const previewImg = document.getElementById('evidencePreviewImg');
+            const previewContainer = document.getElementById('evidencePreviewContainer');
+            if (previewImg) previewImg.src = previewUrl;
+            if (previewContainer) previewContainer.style.display = 'block';
+        }
+    };
+
+    window.removeEvidenceImage = function() {
+        window.evidenceBlob = null;
+        const camInp = document.getElementById('evidenceCameraInput');
+        const galInp = document.getElementById('evidenceGalleryInput');
+        if (camInp) camInp.value = '';
+        if (galInp) galInp.value = '';
+        const previewContainer = document.getElementById('evidencePreviewContainer');
+        if (previewContainer) previewContainer.style.display = 'none';
+        const previewImg = document.getElementById('evidencePreviewImg');
+        if (previewImg) previewImg.src = '';
+    };
+
+    window.openEvidenceModal = function(src) {
+        if (!src) return;
+        const modal = document.getElementById('evidenceModal');
+        const img = document.getElementById('evidenceModalImg');
+        if (modal && img) {
+            img.src = src;
+            modal.style.display = 'flex';
+        }
+    };
+
+    window.closeEvidenceModal = function() {
+        const modal = document.getElementById('evidenceModal');
+        if (modal) modal.style.display = 'none';
+    };
+
     window.submitViolation = function() {
         if(!window.gc_currentStudentId) return alert(window.LANG && window.LANG.no_student_selected || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chưa chọn học sinh!' : 'Chưa chọn học sinh!') ?>");
         const btn = document.querySelector('#violationForm button'); const oldText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i aria-hidden="true" class="fas fa-spinner fa-spin"></i> ' + (window.LANG && window.LANG.saving || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đang lưu...' : 'Đang lưu...') ?>");
-        const fd = new FormData(); fd.append('student_id', window.gc_currentStudentId); fd.append('week', document.getElementById('globalWeekInput').value); fd.append('other_note', document.getElementById('noteInput').value);
+        const fd = new FormData(); fd.append('student_id', window.gc_currentStudentId); fd.append('other_note', document.getElementById('noteInput').value);
         if(document.getElementById('chkTime').checked) fd.append('custom_time', document.getElementById('customTime').value);
         document.querySelectorAll('input[name="v_ids"]:checked').forEach(c => fd.append('violation_ids[]', c.value));
+        
+        // Đính kèm ảnh bằng chứng nếu có
+        if(window.evidenceBlob) {
+            fd.append('evidence_image', window.evidenceBlob, 'evidence.jpg');
+        }
 
         fetch('gate_check.php', {method:'POST', body:fd}).then(r => r.json()).then(d => {
             btn.disabled = false; btn.innerHTML = oldText;
@@ -689,7 +923,16 @@ include 'includes/header.php';
                 if(typeof Toastify !== 'undefined') Toastify({text: window.LANG && window.LANG.saved_successfully || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? '✅ Đã lưu!' : '✅ Đã lưu!') ?>", style:{background:"#10b981"}}).showToast();
                 window.clearSelection();
                 const historyList = document.getElementById('historyList'); if(historyList.children.length === 1 && historyList.children[0].innerText.includes(window.LANG && window.LANG.no_data_substr || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Chưa có' : 'Chưa có') ?>")) { historyList.innerHTML = ''; }
-                if(d.new_data) { d.new_data.forEach(item => { const div = document.createElement('div'); div.className = 'history-item'; div.id = 'rec_' + item.id; div.innerHTML = `<div><b>${item.student_name}</b> <small>(${item.class_name})</small><br><span style="color:var(--danger-color); font-weight:500;">- ${item.violation_name}</span><br><small style="color:var(--text-muted);">${item.time_str}</small></div><button aria-label="Action button" onclick="window.deleteRecord('${item.id}')" class="btn-delete-record" style="border-radius:4px; padding:5px 8px; cursor:pointer;"><i aria-hidden="true" class="fas fa-trash"></i></button>`; historyList.prepend(div); }); }
+                if(d.new_data) {
+                    d.new_data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.id = 'rec_' + item.id;
+                        const imgBadge = item.evidence_img ? `<div style="margin-top:4px;"><a href="javascript:void(0)" onclick="openEvidenceModal('${item.evidence_img}')" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--accent-color); text-decoration:none; font-weight:600; background:rgba(0,95,186,0.1); padding:2px 7px; border-radius:4px; border:1px solid rgba(0,95,186,0.2);"><i class="fas fa-camera" aria-hidden="true"></i> ${window.LANG && window.LANG.view_photo || 'Xem ảnh'}</a></div>` : '';
+                        div.innerHTML = `<div><b>${item.student_name}</b> <small>(${item.class_name})</small><br><span style="color:var(--danger-color); font-weight:500;">- ${item.violation_name}</span><br><small style="color:var(--text-muted);">${item.time_str}</small>${imgBadge}</div><button aria-label="Action button" onclick="window.deleteRecord('${item.id}')" class="btn-delete-record" style="border-radius:4px; padding:5px 8px; cursor:pointer;"><i aria-hidden="true" class="fas fa-trash"></i></button>`;
+                        historyList.prepend(div);
+                    });
+                }
             } else { alert((window.LANG && window.LANG.error_prefix || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi:' : 'Lỗi:') ?>") + d.msg); }
         }).catch(e => { btn.disabled = false; btn.innerHTML = oldText; alert(window.LANG && window.LANG.connection_error || "<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Lỗi kết nối!' : 'Lỗi kết nối!') ?>"); });
     };
@@ -729,9 +972,33 @@ include 'includes/header.php';
         });
     };
 
-    window.clearSelection = function() { window.gc_currentStudentId = null; document.getElementById('violationForm').style.display = 'none'; document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked=false); document.getElementById('noteInput').value = ''; document.getElementById('stuImg').src = 'static/default.png';};
-    window.toggleTimeInput = function() { document.getElementById('timeInputArea').style.display = document.getElementById('chkTime').checked ? 'block' : 'none'; };
-    window.toggleDropdown = function(e, el) { e.stopPropagation(); window.closeAllSelects(el); el.nextElementSibling.style.display = el.nextElementSibling.style.display==='block'?'none':'block'; el.classList.toggle('active'); };
+    window.clearSelection = function() {
+        window.gc_currentStudentId = null;
+        document.getElementById('violationForm').style.display = 'none';
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        document.getElementById('noteInput').value = '';
+        document.getElementById('stuImg').src = 'static/default.png';
+        const chkTime = document.getElementById('chkTime');
+        if (chkTime) { chkTime.checked = false; }
+        const timeInputArea = document.getElementById('timeInputArea');
+        if (timeInputArea) { timeInputArea.style.display = 'none'; }
+        window.removeEvidenceImage();
+    };
+    window.toggleTimeInput = function() {
+        const chk = document.getElementById('chkTime');
+        const area = document.getElementById('timeInputArea');
+        if (chk && area) {
+            area.style.display = chk.checked ? 'block' : 'none';
+        }
+    };
+    window.toggleDropdown = function(e, el) { 
+        e.stopPropagation(); 
+        window.closeAllSelects(el); 
+        const box = document.getElementById('resultBox');
+        if (box) box.style.display = 'none';
+        el.nextElementSibling.style.display = el.nextElementSibling.style.display==='block'?'none':'block'; 
+        el.classList.toggle('active'); 
+    };
     window.closeAllSelects = function(except) { document.querySelectorAll('.select-items').forEach(i => { if(i!==except?.nextElementSibling) i.style.display='none'; }); document.querySelectorAll('.select-selected').forEach(e => { if(e!==except) e.classList.remove('active'); }); };
 </script>
 

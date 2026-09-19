@@ -19,14 +19,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (isset($_POST['suggest_query'])) {
         $q = trim($_POST['suggest_query']);
+        
+        // 1. Tự động bóc tách mẫu KxxAyyyy... ở bất kỳ đâu trong chuỗi (ví dụ: Ma_HS_16_Truong Thanh Hieu_K48A1016)
+        if (preg_match('/K[0-9]{1,2}A[0-9]+/i', $q, $m)) {
+            $extractedCode = strtoupper($m[0]);
+        } else {
+            // 2. Tách bỏ tiền tố Ma_HS_ / URL / dấu gạch dưới _
+            $clean = preg_replace('/^Ma_HS_/i', '', $q);
+            if (strpos($clean, '/') !== false) {
+                $parts = explode('/', rtrim($clean, '/'));
+                $clean = end($parts);
+            }
+            if (strpos($clean, '_') !== false) {
+                $parts = explode('_', $clean);
+                $clean = end($parts);
+            }
+            $extractedCode = strtoupper(trim($clean));
+        }
+
         $stmt = $pdo->prepare("
             SELECT s.id, s.code, s.name, s.image_url, c.name as class_name 
             FROM student s 
             LEFT JOIN classroom c ON s.class_id = c.id 
-            WHERE s.name LIKE ? OR s.code LIKE ? 
-            LIMIT 10
+            WHERE (c.grade < 13 OR c.grade IS NULL)
+              AND (c.name NOT LIKE 'K46%' OR c.name IS NULL)
+              AND (s.code = ? OR s.code LIKE ? OR s.name LIKE ? OR ? LIKE CONCAT('%', s.code, '%'))
+            ORDER BY 
+              CASE WHEN s.code = ? THEN 0 ELSE 1 END ASC,
+              CASE WHEN c.grade = 10 THEN 0 WHEN c.grade = 11 THEN 1 WHEN c.grade = 12 THEN 2 ELSE 3 END ASC,
+              s.name ASC
+            LIMIT 15
         ");
-        $stmt->execute(["%$q%", "%$q%"]);
+        $stmt->execute([$extractedCode, "%$extractedCode%", "%$q%", $q, $extractedCode]);
         echo json_encode(['status' => 'success', 'results' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
         exit;
     }
@@ -49,15 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
-            $student_id = $_POST['student_id'];
-            $week = $_POST['week'] ?? $default_week;
+            $note = $_POST['other_note'] ?? '';
+            $custom_time = $_POST['custom_time'] ?? null;
+            $created_at = $custom_time ? date('Y-m-d H:i:s', strtotime($custom_time)) : date('Y-m-d H:i:s');
+
+            // Tự động nhận diện tuần theo ngày chấm (nếu chấm bù thì tính tuần theo ngày chấm bù)
+            $week = (int) get_current_week($pdo, $created_at);
 
             if (is_week_skipped($week, $pdo)) {
                 throw new Exception(__('week_frozen', "Tuần học này đã bị đóng băng do trùng lịch nghỉ lễ/Tết của toàn trường."));
             }
-            $note = $_POST['other_note'] ?? '';
-            $custom_time = $_POST['custom_time'] ?? null;
-            $created_at = $custom_time ? date('Y-m-d H:i:s', strtotime($custom_time)) : date('Y-m-d H:i:s');
             
             $violation_ids = [];
             if (isset($_POST['violation_ids'])) {
@@ -99,9 +124,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $current_school_year = get_current_school_year($pdo);
 
+            // Xử lý upload ảnh bằng chứng nếu có
+            $evidence_img_path = null;
+            if (isset($_FILES['evidence_image']) && $_FILES['evidence_image']['error'] === UPLOAD_ERR_OK) {
+                $upload_dir = __DIR__ . '/../static/uploads/evidence/';
+                if (!is_dir($upload_dir)) {
+                    @mkdir($upload_dir, 0777, true);
+                }
+                $file_tmp = $_FILES['evidence_image']['tmp_name'];
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $file_tmp);
+                finfo_close($finfo);
+
+                $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+                if (in_array($mime, $allowed_mimes)) {
+                    $ext = ($mime === 'image/png') ? 'png' : (($mime === 'image/webp') ? 'webp' : 'jpg');
+                    $new_filename = 'evidence_' . time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+                    $target_path = $upload_dir . $new_filename;
+                    if (move_uploaded_file($file_tmp, $target_path)) {
+                        $evidence_img_path = 'static/uploads/evidence/' . $new_filename;
+                    }
+                }
+            }
+
             $sql = "INSERT INTO violation_record 
-                    (student_id, class_id, violation_type_id, recorded_violation_name, recorded_points, reporter, week_number, note, date_created, school_year) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    (student_id, class_id, violation_type_id, recorded_violation_name, recorded_points, reporter, week_number, note, date_created, school_year, evidence_img) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmtInsert = $pdo->prepare($sql);
             
             $new_data_response = [];
@@ -114,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $vioName = $vioType['content'];
                     $stmtInsert->execute([
                         $student_id, $class_id, $vid, $vioName, 
-                        $vioType['points'], $currentUser, $week, $note, $created_at, $current_school_year
+                        $vioType['points'], $currentUser, $week, $note, $created_at, $current_school_year, $evidence_img_path
                     ]);
 
                     $new_data_response[] = [
@@ -125,7 +173,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'violation_name_en' => $vioType['content_en'] ?? '',
                         'recorded_points' => $vioType['points'],
                         'time_str' => date('H:i d/m', strtotime($created_at)),
-                        'violation_type_id' => $vid
+                        'violation_type_id' => $vid,
+                        'evidence_img' => $evidence_img_path
                     ];
 
                     $list_error_names[] = $vioType['content'];
@@ -192,7 +241,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'date_created' => $created_at,
                     'violation_type_id' => $rec['violation_type_id'] ?? 0,
                     'week_number'  => $week,
-                    'note'         => $note
+                    'note'         => $note,
+                    'evidence_img' => $evidence_img_path
                 ]);
             }
 
@@ -224,11 +274,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'recent_json') {
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && (($_GET['action'] ?? '') === 'recent_json' || empty($_GET['action']))) {
     $current_school_year = get_current_school_year($pdo);
     $lang = $_SESSION['lang'] ?? 'vi';
     $stmt = $pdo->prepare("
-        SELECT r.id, r.recorded_violation_name, r.recorded_points, r.date_created, r.note,
+        SELECT r.id, r.recorded_violation_name, r.recorded_points, r.date_created, r.note, r.evidence_img, r.reporter,
                s.name as student_name, c.name as class_name,
                vt.content_en AS recorded_violation_name_en
         FROM violation_record r
@@ -237,15 +287,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'recent_
         LEFT JOIN violation_type vt ON r.violation_type_id = vt.id
         WHERE r.reporter = ? AND r.is_deleted = 0 AND r.school_year = ?
         ORDER BY r.date_created DESC
-        LIMIT 15
+        LIMIT 20
     ");
     $stmt->execute([$currentUser, $current_school_year]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as &$row) {
-        $row['display_name'] = ($lang === 'en' && !empty($row['recorded_violation_name_en']))
+        $vName = ($lang === 'en' && !empty($row['recorded_violation_name_en']))
             ? $row['recorded_violation_name_en']
             : $row['recorded_violation_name'];
-        $row['time_label'] = date('H:i d/m', strtotime($row['date_created']));
+        $timeStr = date('H:i d/m', strtotime($row['date_created']));
+        $row['display_name'] = $vName;
+        $row['violation_name'] = $vName;
+        $row['time_label'] = $timeStr;
+        $row['time_str'] = $timeStr;
     }
     echo json_encode(['status' => 'success', 'violations' => $rows, 'lang' => $lang]);
     exit;

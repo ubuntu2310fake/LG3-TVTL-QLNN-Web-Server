@@ -17,10 +17,9 @@ if ($lastId <= 0) {
 }
 
 $maxRuntime = 25; // 25 seconds for long polling
-$startTime = time();
+$username = $_GET['user'] ?? ($_SESSION['user']['username'] ?? null);
 
 while (true) {
-    $username = $_SESSION['user']['username'] ?? null;
     if ($username) {
         $stmt = $pdo->prepare("SELECT * FROM sse_events WHERE id > ? AND (scope = 'all' OR scope = ?) ORDER BY id ASC");
         $stmt->execute([$lastId, 'user:' . $username]);

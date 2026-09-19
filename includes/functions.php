@@ -41,13 +41,13 @@ function get_settings($pdo) {
     return $settings;
 }
 
-function get_current_week($pdo) {
+function get_current_week($pdo, $target_date = null) {
     try {
         $current_school_year = get_current_school_year($pdo);
         $current_start_date = get_config_for_year($pdo, 'start_date', $current_school_year, date('Y-m-d'));
 
         $start = new DateTime($current_start_date);
-        $now = new DateTime();
+        $now = $target_date ? new DateTime($target_date) : new DateTime();
         $now->setTime(0,0,0); 
         $start->setTime(0,0,0);
 
@@ -442,13 +442,15 @@ function parse_system_log_line($line) {
     $duration = (float)$parts[2];
     $status = (int)$parts[3];
     $path = $parts[4];
+    $username = isset($parts[5]) ? trim($parts[5]) : '-';
     
     return [
         'time' => $time,
         'ip' => $ip,
         'duration' => $duration,
         'status' => $status,
-        'path' => $path
+        'path' => $path,
+        'username' => $username
     ];
 }
 

@@ -66,10 +66,133 @@ require_once 'includes/header.php';
     
     .db-chat-header { height: 60px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 15px; z-index: 10; color: var(--text-main); }
     .db-btn-back { margin-right: 10px; background: transparent; border: none; font-size: 18px; color: inherit; cursor: pointer; display: none; }
-    @media (max-width: 768px) { .db-sidebar { width: 100%; position: absolute; height: 100%; } .db-chat-area { width: 100%; position: absolute; height: 100%; transform: translateX(100%); transition: transform 0.4s; z-index: 20; } .db-chat-area.active { transform: translateX(0); } .db-btn-back { display: block; } }
 
-    .chat-msgs { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-    .msg-row { display: flex; width: 100%; position: relative; margin-bottom: 12px; }
+    /* FIX TOÀN DIỆN CHO MOBILE: XÓA KHOẢNG TRỐNG THỪA & KHÓA CUỘN BODY */
+    @media (max-width: 991px) {
+        body { overflow: hidden !important; }
+        .main-content { 
+            padding: 0 !important; 
+            margin: 0 !important; 
+            overflow: hidden !important; 
+            height: 100dvh !important; 
+            max-height: 100dvh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .main-content > *:not(.mobile-header) { 
+            margin-left: 0 !important; 
+            margin-right: 0 !important; 
+            margin-top: 0 !important; 
+        }
+        #ajax-page-wrapper {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 0 !important;
+            height: 100% !important;
+        }
+        .db-layout { 
+            flex: 1 !important;
+            height: 100% !important; 
+            min-height: 0 !important;
+            border-radius: 0 !important; 
+            border: none !important; 
+            box-shadow: none !important; 
+        }
+        .db-sidebar { 
+            width: 100% !important; 
+            position: absolute !important; 
+            height: 100% !important; 
+            left: 0; 
+            top: 0; 
+        } 
+        .db-chat-area { 
+            width: 100% !important; 
+            position: absolute !important; 
+            height: 100% !important; 
+            left: 0; 
+            top: 0; 
+            transform: translateX(100%); 
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            z-index: 20; 
+        } 
+        .db-chat-area.active { 
+            transform: translateX(0); 
+        } 
+        .db-btn-back { 
+            display: block !important; 
+        } 
+    }
+
+    html[data-device="mobile"] body { overflow: hidden !important; }
+    html[data-device="mobile"] .main-content { 
+        padding: 0 !important; 
+        margin: 0 !important; 
+        overflow: hidden !important; 
+        height: 100dvh !important; 
+        max-height: 100dvh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    html[data-device="mobile"] .main-content > *:not(.mobile-header) { 
+        margin-left: 0 !important; 
+        margin-right: 0 !important; 
+        margin-top: 0 !important; 
+    }
+    html[data-device="mobile"] #ajax-page-wrapper {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        height: 100% !important;
+    }
+    html[data-device="mobile"] .db-layout { 
+        flex: 1 !important;
+        height: 100% !important; 
+        min-height: 0 !important;
+        border-radius: 0 !important; 
+        border: none !important; 
+        box-shadow: none !important; 
+    }
+    html[data-device="mobile"] .db-sidebar { 
+        width: 100% !important; 
+        position: absolute !important; 
+        height: 100% !important; 
+        left: 0; 
+        top: 0; 
+    } 
+    html[data-device="mobile"] .db-chat-area { 
+        width: 100% !important; 
+        position: absolute !important; 
+        height: 100% !important; 
+        left: 0; 
+        top: 0; 
+        transform: translateX(100%); 
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+        z-index: 20; 
+    } 
+    html[data-device="mobile"] .db-chat-area.active { 
+        transform: translateX(0); 
+    } 
+    html[data-device="mobile"] .db-btn-back { 
+        display: block !important; 
+    }
+
+    .chat-msgs { 
+        flex: 1; 
+        overflow-y: auto; 
+        padding: 15px; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    /* MẶC ĐỊNH GHIM DƯỚI ĐÁY TỰ NHIÊN: Tin nhắn tự động bám đáy mà không cần cuộn */
+    .chat-msgs > .msg-row:first-child {
+        margin-top: auto !important;
+    }
+    .msg-row { display: flex; width: 100%; position: relative; margin-bottom: 4px; }
     .msg-me { justify-content: flex-end; } .msg-other { justify-content: flex-start; }
     
     .bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; cursor: pointer; word-wrap: break-word; user-select: none; transition: transform 0.1s ease; }
@@ -84,12 +207,22 @@ require_once 'includes/header.php';
     .reaction-badge { position: absolute; bottom: -10px; right: 2px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1px 5px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2; color: var(--text-main); }
     .msg-me .reaction-badge { right: auto; left: 2px; }
 
-    .input-wrapper { background: var(--bg-card); border-top: 1px solid var(--border-color); padding: 5px 0; }
+    .input-wrapper { background: var(--bg-card); border-top: 1px solid var(--border-color); padding: 5px 0; flex-shrink: 0; }
     .reply-preview { display: none; padding: 8px 15px; background: var(--bg-hover); border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); align-items: center; justify-content: space-between; }
     .chat-input { padding: 8px 15px; display: flex; gap: 10px; align-items: center; }
     .chat-input input { flex: 1; padding: 10px 18px; border-radius: 22px; border: 1px solid var(--border-color); background: var(--bg-input); outline: none; font-size: 15px; color: var(--text-main); font-family: inherit; }
     .btn-send-chat { color: var(--primary-color); background: none; border: none; font-size: 22px; cursor: pointer; transition: 0.2s; }
     .btn-send-chat:hover { transform: scale(1.1); }
+
+    .lazy-loading-spinner {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        font-size: 12px;
+        color: var(--text-muted);
+        gap: 6px;
+    }
 
     /* MENU NGỮ CẢNH NỔI */
     .tvtl-custom-menu-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; z-index: 3000; background: rgba(0,0,0,0.1); }
@@ -149,6 +282,10 @@ require_once 'includes/header.php';
                 <b id="db-room-name" style="font-size: 16px;">...</b>
             </div>
             
+            <div class="lazy-loading-spinner" id="db-lazy-spinner">
+                <i class="fas fa-spinner fa-spin"></i> <span><?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? 'Đang tải tin nhắn cũ...' : 'Loading older messages...') ?></span>
+            </div>
+
             <div class="chat-msgs" id="db-msg-box"></div>
             
             <div class="input-wrapper">
@@ -177,6 +314,11 @@ window.TeacherChatApp = (function() {
     let chatSSE = null;       // SSE connection for messages
     const pythonBase = '';
 
+    // Lazy load state (reverse: bottom-to-top)
+    let oldestMsgId = null;
+    let hasMoreOlder = true;
+    let isLoadingOlder = false;
+
     async function reqPy(endpoint, bodyData = null, isMultipart = false) {
         let opts = { method: bodyData ? 'POST' : 'GET' };
         if (bodyData) {
@@ -189,10 +331,11 @@ window.TeacherChatApp = (function() {
     async function loadContacts() {
         const users = await reqPy('/api/teacher/get_conversations');
         const list = document.getElementById('db-user-list');
+        if (!list) return;
         let h = '';
         if(users && users.length > 0) {
             users.forEach(u => {
-let active = (u.partner_id == partnerId) ? 'active' : '';
+                let active = (u.partner_id == partnerId) ? 'active' : '';
                 let ava = u.avatar || 'static/default.png';
                 if (!ava.startsWith('http')) ava = pythonBase + ava;
                 
@@ -205,7 +348,7 @@ let active = (u.partner_id == partnerId) ? 'active' : '';
                 if (lastMsg.length > 25) lastMsg = lastMsg.substring(0, 25) + '...';
                 lastMsg = lastMsg.replace(/</g, '&lt;');
 
-                h += `<div class="user-item ${active}" onclick="TeacherChatApp.openRoom(${u.partner_id}, '${u.partner_name}', '${ava}')">
+                h += `<div class="user-item ${active}" onclick="TeacherChatApp.openRoom(${u.partner_id}, '${u.partner_name.replace(/'/g, "\\'")}', '${ava}')">
                         <div style="position:relative;">
                             <img src="${ava}">
                             ${isUnread ? '<div style="position:absolute; bottom:2px; right:12px; width:12px; height:12px; background:var(--primary-color); border-radius:50%; border:2px solid var(--bg-card);"></div>' : ''}
@@ -220,81 +363,216 @@ let active = (u.partner_id == partnerId) ? 'active' : '';
         if(list.innerHTML !== h) list.innerHTML = h;
     }
 
-async function loadMessages(forceScroll = false) {
+    function renderSingleMsgHtml(m) {
+        let isMe = (m.sender_id != partnerId);
+        let cls = isMe ? 'msg-me' : 'msg-other';
+        let cRaw = m.content || '';
+        let cShow = cRaw;
+
+        if (cRaw.startsWith('[IMG]:')) {
+            cShow = `<img src="${pythonBase}${cRaw.replace('[IMG]:','')}" style="max-width:220px; border-radius:12px; display:block; cursor:pointer;" onclick="window.open(this.src,'_blank')">`;
+            cRaw = "[" + (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Hình ảnh'" : "'Image'") ?>) + "]";
+        } else { cShow = cShow.replace(/</g, "&lt;"); }
+
+        let rHtml = '';
+        if (m.reply_id && m.reply_content) {
+            let rC = m.reply_content.startsWith('[IMG]:') ? '[' + (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Hình ảnh'" : "'Image'") ?>) + ']' : m.reply_content.replace(/</g, "&lt;");
+            rHtml = `<div class="reply-quote"><i class="fa-solid fa-reply"></i> ${rC}</div>`;
+        }
+
+        let rctHtml = m.reactions ? `<div class="reaction-badge">${m.reactions}</div>` : '';
+        let anonHeader = (!isMe && m.is_anonymous == 1) ? `<div style="font-size:11px; font-weight:bold; color:#8b5cf6; margin-bottom:3px;"><i class="fa-solid fa-user-secret"></i> ${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Học sinh ẩn danh 🛡️'" : "'Anonymous Student 🛡️'") ?>}</div>` : '';
+
+        return `
+        <div class="msg-row ${cls}">
+            <div class="bubble" data-msg-id="${m.id}"
+                 oncontextmenu="TeacherChatApp.showMenu(event, ${m.id}, ${isMe}, '${cRaw.replace(/'/g, "\\'")}'); return false;"
+                 ontouchstart="window.longPressTimer = setTimeout(() => TeacherChatApp.showMenu(event, ${m.id}, ${isMe}, '${cRaw.replace(/'/g, "\\'")}'), 500)"
+                 ontouchend="clearTimeout(window.longPressTimer)">
+                ${anonHeader}
+                ${rHtml}
+                ${cShow}
+                ${rctHtml}
+            </div>
+        </div>`;
+    }
+
+    // Tải tin nhắn mới nhất (từ dưới lên trên) khi vừa mở phòng
+    async function loadMessages(forceScroll = false) {
         if(!partnerId) return;
-        const msgs = await reqPy('/api/chat/get', { partner_id: partnerId });
+        const currentPid = partnerId;
+        const msgs = await reqPy('/api/chat/get', { partner_id: currentPid, limit: 30 });
+        if (partnerId !== currentPid) return;
         const box = document.getElementById('db-msg-box');
+        if (!box) return;
         
-        // KHI HỌC SINH BẬT ẨN DANH VÀ XÓA LỊCH SỬ CHAT, ĐẨY GIÁO VIÊN RA NGOÀI MÀN HÌNH CHỜ
+        // Nếu không có tin nhắn nào
         if (!msgs || msgs.length === 0) {
+            oldestMsgId = null;
+            hasMoreOlder = false;
+            box.innerHTML = '';
             TeacherChatApp.closeRoom();
-            loadConversations();
+            loadContacts();
             return;
         }
 
+        oldestMsgId = msgs[0].id;
+        hasMoreOlder = (msgs.length >= 30);
+
         let html = '';
-        if (msgs) {
-            msgs.forEach(m => {
-                let isMe = (m.sender_id != partnerId);
-                let cls = isMe ? 'msg-me' : 'msg-other';
-                let cRaw = m.content || '';
-                let cShow = cRaw;
+        msgs.forEach(m => {
+            html += renderSingleMsgHtml(m);
+        });
 
-                if (cRaw.startsWith('[IMG]:')) {
-                    cShow = `<img src="${pythonBase}${cRaw.replace('[IMG]:','')}" style="max-width:220px; border-radius:12px; display:block; cursor:pointer;" onclick="window.open(this.src,'_blank')">`;
-                    cRaw = "[" + (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Hình ảnh'" : "'Image'") ?>) + "]";
-                } else { cShow = cShow.replace(/</g, "&lt;"); }
+        box.innerHTML = html;
+        
+        // CẤM TỪ TRÊN XUỐNG DƯỚI: Luôn neo xuống dưới cùng (tin nhắn mới nhất)
+        box.scrollTop = box.scrollHeight;
+        if(forceScroll) {
+            setTimeout(() => { box.scrollTop = box.scrollHeight; }, 50);
+            setTimeout(() => { box.scrollTop = box.scrollHeight; }, 150);
+        }
+    }
 
-                let rHtml = '';
-                if (m.reply_id && m.reply_content) {
-                    let rC = m.reply_content.startsWith('[IMG]:') ? '[' + (<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Hình ảnh'" : "'Image'") ?>) + ']' : m.reply_content.replace(/</g, "&lt;");
-                    rHtml = `<div class="reply-quote"><i class="fa-solid fa-reply"></i> ${rC}</div>`;
-                }
+    // Reverse lazy load: Khi cuộn lên đỉnh, tải tin nhắn cũ hơn và nối vào phía trên
+    async function loadOlderMessages() {
+        if (!partnerId || isLoadingOlder || !hasMoreOlder || !oldestMsgId) return;
+        isLoadingOlder = true;
+        const spinner = document.getElementById('db-lazy-spinner');
+        if (spinner) spinner.style.display = 'flex';
 
-                let rctHtml = m.reactions ? `<div class="reaction-badge">${m.reactions}</div>` : '';
-                let anonHeader = (!isMe && m.is_anonymous == 1) ? `<div style="font-size:11px; font-weight:bold; color:#8b5cf6; margin-bottom:3px;"><i class="fa-solid fa-user-secret"></i> ${<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Học sinh ẩn danh 🛡️'" : "'Anonymous Student 🛡️'") ?>}</div>` : '';
+        const currentPid = partnerId;
+        const msgs = await reqPy('/api/chat/get', { partner_id: currentPid, before_id: oldestMsgId, limit: 30 });
+        
+        if (spinner) spinner.style.display = 'none';
+        isLoadingOlder = false;
 
-                html += `
-                <div class="msg-row ${cls}">
-                    <div class="bubble" data-msg-id="${m.id}"
-                         oncontextmenu="TeacherChatApp.showMenu(event, ${m.id}, ${isMe}, '${cRaw.replace(/'/g, "\\'")}'); return false;"
-                         ontouchstart="window.longPressTimer = setTimeout(() => TeacherChatApp.showMenu(event, ${m.id}, ${isMe}, '${cRaw.replace(/'/g, "\\'")}'), 500)"
-                         ontouchend="clearTimeout(window.longPressTimer)">
-                        ${anonHeader}
-                        ${rHtml}
-                        ${cShow}
-                        ${rctHtml}
-                    </div>
-                </div>`;
-            });
+        if (partnerId !== currentPid) return;
+        const box = document.getElementById('db-msg-box');
+        if (!box) return;
+
+        if (!msgs || msgs.length === 0) {
+            hasMoreOlder = false;
+            return;
         }
 
-        if(box.innerHTML !== html) {
-            box.innerHTML = html;
-            if(forceScroll) setTimeout(() => box.scrollTo({top: box.scrollHeight, behavior: 'smooth'}), 50);
+        // Cập nhật ID tin nhắn cũ nhất mới
+        oldestMsgId = msgs[0].id;
+        if (msgs.length < 30) {
+            hasMoreOlder = false;
+        }
+
+        // Giữ nguyên vị trí cuộn khi chèn tin nhắn cũ vào đầu
+        const oldScrollHeight = box.scrollHeight;
+        const oldScrollTop = box.scrollTop;
+
+        let olderHtml = '';
+        msgs.forEach(m => {
+            olderHtml += renderSingleMsgHtml(m);
+        });
+
+        box.insertAdjacentHTML('afterbegin', olderHtml);
+
+        // Duy trì khoảng cách xem để không bị nhảy khung nhìn
+        const newScrollHeight = box.scrollHeight;
+        box.scrollTop = oldScrollTop + (newScrollHeight - oldScrollHeight);
+    }
+
+    // Messenger Keyboard Handler: Co khung giao diện và ĐẨY TIN NHẮN LÊN TRÊN
+    function adjustForKeyboard() {
+        const isMobile = document.documentElement.getAttribute('data-device') === 'mobile' || window.innerWidth <= 991;
+        const layout = document.querySelector('.db-layout');
+        const msgBox = document.getElementById('db-msg-box');
+        if (!layout) return;
+
+        if (!isMobile) {
+            layout.style.height = '';
+            layout.style.minHeight = '';
+            return;
+        }
+
+        if (window.visualViewport) {
+            const vv = window.visualViewport;
+            const mobileHeader = document.querySelector('.mobile-header');
+            const headerH = (mobileHeader && window.getComputedStyle(mobileHeader).display !== 'none') 
+                ? mobileHeader.offsetHeight 
+                : 0;
+            
+            // Tính chiều cao khả dụng chính xác khi bàn phím trồi lên
+            const targetH = vv.height - headerH;
+            layout.style.height = `${targetH}px`;
+            layout.style.minHeight = `${targetH}px`;
+
+            // Bắt buộc đẩy tin nhắn hiện tại lên ngay sát trên thanh nhập (giống Messenger)
+            if (msgBox) {
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }
+        } else {
+            if (msgBox) {
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }
         }
     }
 
     return {
         init: function() {
             loadContacts();
-            // Contacts sidebar: làm mới nhẹ mỗi 5 giây
             pollingTimer = setInterval(() => loadContacts(), 5000);
+
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', adjustForKeyboard);
+                window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+            }
+
+            const inp = document.getElementById('db-inp-msg');
+            if (inp) {
+                // Khi focus bàn phím bật lên: co ngay và đẩy tin nhắn lên liên tiếp theo nhịp animation
+                inp.addEventListener('focus', () => {
+                    adjustForKeyboard();
+                    setTimeout(adjustForKeyboard, 100);
+                    setTimeout(adjustForKeyboard, 250);
+                    setTimeout(adjustForKeyboard, 400);
+                });
+                inp.addEventListener('blur', () => {
+                    setTimeout(adjustForKeyboard, 100);
+                });
+            }
+
+            // Gắn lắng nghe scroll ở hộp chat để Lazy Load ngược từ dưới lên trên
+            const box = document.getElementById('db-msg-box');
+            if (box) {
+                box.addEventListener('scroll', () => {
+                    if (box.scrollTop <= 50 && hasMoreOlder && !isLoadingOlder) {
+                        loadOlderMessages();
+                    }
+                });
+            }
         },
         destroy: function() {
             if (pollingTimer) clearInterval(pollingTimer);
             if (chatSSE) { chatSSE.close(); chatSSE = null; }
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', adjustForKeyboard);
+                window.visualViewport.removeEventListener('scroll', adjustForKeyboard);
+            }
         },
         openRoom: function(pid, name, ava) {
             partnerId = pid;
+            oldestMsgId = null;
+            hasMoreOlder = true;
+            isLoadingOlder = false;
+
             document.getElementById('db-empty-state').style.display = 'none';
             document.getElementById('db-chat-content').classList.add('active');
             document.getElementById('db-chat-area').classList.add('active');
             document.getElementById('db-room-name').innerText = name;
             document.getElementById('db-room-ava').src = ava;
             this.cancelReply();
+            
+            adjustForKeyboard();
+            setTimeout(adjustForKeyboard, 100);
 
-            // Load lịch sử tin nhắn ngược lại lần đầu
+            // Load lịch sử tin nhắn mới nhất tại đáy (lazy load từ dưới lên trên)
             loadMessages(true);
             loadContacts();
 
@@ -309,57 +587,32 @@ async function loadMessages(forceScroll = false) {
                 const box = document.getElementById('db-msg-box');
                 if (!box) return;
 
-                const isMe = (msg.sender_id != pid);
-                const cls  = isMe ? 'msg-me' : 'msg-other';
-
-                let cRaw  = msg.content || '';
-                let cShow = cRaw;
-                if (cRaw.startsWith('[IMG]:')) {
-                    const src = pythonBase + cRaw.replace('[IMG]:', '');
-                    cShow = `<img src="${src}" style="max-width:220px;border-radius:12px;display:block;cursor:pointer" onclick="window.open(this.src,'_blank')">`;
-                } else {
-                    cShow = cShow.replace(/</g, '&lt;');
-                }
-
-                let rHtml = '';
-                if (msg.reply_id && msg.reply_content) {
-                    const rC = msg.reply_content.startsWith('[IMG]:') ? '[Hình ảnh]' : msg.reply_content.replace(/</g,'&lt;');
-                    rHtml = `<div class="reply-quote"><i class="fa-solid fa-reply"></i> ${rC}</div>`;
-                }
-
-                const rctHtml  = msg.reactions ? `<div class="reaction-badge">${msg.reactions}</div>` : '';
-                const anonHdr  = (!isMe && msg.is_anonymous == 1)
-                    ? `<div style="font-size:11px;font-weight:bold;color:#8b5cf6;margin-bottom:3px"><i class="fa-solid fa-user-secret"></i> Học sinh ẩn danh 🛡️</div>`
-                    : '';
-                const cRawEsc  = cRaw.replace(/'/g, "\\'");
-
-                // Tránh render trùng nếu đã có trong loadMessages
+                // Tránh render trùng nếu đã có
                 if (box.querySelector(`[data-msg-id="${msg.id}"]`)) return;
 
-                const div = document.createElement('div');
-                div.className = `msg-row ${cls}`;
-                div.innerHTML = `
-                    <div class="bubble" data-msg-id="${msg.id}"
-                         oncontextmenu="TeacherChatApp.showMenu(event,${msg.id},${isMe},'${cRawEsc}');return false;"
-                         ontouchstart="window.longPressTimer=setTimeout(()=>TeacherChatApp.showMenu(event,${msg.id},${isMe},'${cRawEsc}'),500)"
-                         ontouchend="clearTimeout(window.longPressTimer)">
-                        ${anonHdr}${rHtml}${cShow}${rctHtml}
-                    </div>`;
-                box.appendChild(div);
-                box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+                const isAtBottom = (box.scrollHeight - box.scrollTop - box.clientHeight < 150);
+                box.insertAdjacentHTML('beforeend', renderSingleMsgHtml(msg));
+
+                // Nếu đang ở gần đáy thì tự động cuộn theo tin mới
+                if (isAtBottom || msg.sender_id == <?= $_SESSION['user']['id'] ?>) {
+                    box.scrollTop = box.scrollHeight;
+                }
 
                 // Làm mới danh sách sidebar
                 loadContacts();
             });
 
             chatSSE.onerror = function() {
-                // SSE tự reconnect, không cần xử lý thêm
+                // SSE tự reconnect
             };
         },
         closeRoom: function() {
-            // Đóng SSE khi rời phòng
             if (chatSSE) { chatSSE.close(); chatSSE = null; }
             partnerId = null;
+            oldestMsgId = null;
+            hasMoreOlder = true;
+            isLoadingOlder = false;
+
             document.getElementById('db-chat-area').classList.remove('active');
             document.getElementById('db-chat-content').classList.remove('active');
             document.getElementById('db-empty-state').style.display = 'flex';
@@ -379,7 +632,7 @@ async function loadMessages(forceScroll = false) {
             let payload = { receiver_id: partnerId, content: txt };
             if (rid) payload.reply_id = parseInt(rid);
             await reqPy('/api/chat/send', payload);
-            loadMessages(true);
+            loadContacts();
         },
         uploadImg: async function(input) {
             const file = input.files[0];
@@ -391,7 +644,7 @@ async function loadMessages(forceScroll = false) {
                 if (replyingToId) payload.reply_id = parseInt(replyingToId);
                 await reqPy('/api/chat/send', payload);
                 this.cancelReply();
-                loadMessages(true);
+                loadContacts();
             } else { alert(<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Lỗi tải ảnh lên máy chủ'" : "'Error uploading image to server'") ?>); }
             input.value = '';
         },
@@ -412,7 +665,6 @@ async function loadMessages(forceScroll = false) {
         react: async function(emoji) {
             this.hideMenu();
             await reqPy('/api/chat/react', { message_id: parseInt(selectedMsgId), emoji: emoji });
-            loadMessages(false);
         },
         prepReply: function() {
             this.hideMenu();
@@ -433,8 +685,14 @@ async function loadMessages(forceScroll = false) {
         delMsg: async function() {
             this.hideMenu();
             if(!confirm(<?= (($_SESSION['lang'] ?? 'vi') === 'vi' ? "'Bạn muốn xóa tin nhắn này?'" : "'Do you want to delete this message?'") ?>)) return;
-            await reqPy('/api/chat/delete', { message_id: parseInt(selectedMsgId) });
-            loadMessages(false);
+            const res = await reqPy('/api/chat/delete', { message_id: parseInt(selectedMsgId) });
+            if (res && res.success) {
+                const bubble = document.querySelector(`[data-msg-id="${selectedMsgId}"]`);
+                if (bubble) {
+                    const row = bubble.closest('.msg-row');
+                    if (row) row.remove();
+                }
+            }
         }
     };
 })();
